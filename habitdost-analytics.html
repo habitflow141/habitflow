@@ -392,10 +392,23 @@
     document.getElementById('month-label').textContent = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
     const { data: profile } = await sb.from('profiles').select('plan, full_name').eq('id', currentUser.id).single();
-    document.getElementById('nav-plan').textContent = profile?.plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
+    userPlan = profile?.plan || 'free';
+    document.getElementById('nav-plan').textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
 
     await loadData();
     renderAll();
+
+    // 🔒 Lock advanced analytics for free users
+    if (userPlan !== 'pro') {
+      const lockMsg = `<div style="text-align:center;padding:40px 20px;background:var(--card);border:1.5px dashed var(--border);border-radius:18px;margin-top:16px;">
+        <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+        <h3 style="color:var(--ink);font-size:1rem;margin-bottom:8px">Pro Feature</h3>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Upgrade to Pro to unlock the full heatmap, monthly charts, per-habit stats and CSV export.</p>
+        <a href="habitdost-upgrade.html" style="display:inline-block;padding:10px 24px;background:var(--teal);color:#fff;border-radius:50px;font-weight:700;font-size:.85rem;text-decoration:none;">Upgrade to Pro ⭐</a>
+      </div>`;
+      const heatmapSection = document.querySelector('.section-card');
+      if (heatmapSection) heatmapSection.insertAdjacentHTML('afterend', lockMsg);
+    }
   }
 
   async function loadData() {

@@ -426,7 +426,7 @@
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     // Load theme from DB
-    sb.from('profiles').select('theme, full_name').eq('id', currentUser.id).single().then(({ data: p }) => {
+    sb.from('profiles').select('theme, full_name, plan').eq('id', currentUser.id).single().then(({ data: p }) => {
       if (p?.theme) {
         document.body.setAttribute('data-theme', p.theme);
         localStorage.setItem('hf-theme', p.theme);
@@ -435,6 +435,11 @@
         document.getElementById('nav-name').textContent = p.full_name;
         const av = document.getElementById('nav-avatar');
         if (av) av.textContent = p.full_name[0].toUpperCase();
+      }
+      if (p?.plan) {
+        userPlan = p.plan;
+        const planEl = document.querySelector('.user-plan');
+        if (planEl) planEl.textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
       }
     });
     document.getElementById('nav-name').textContent = name;
@@ -546,6 +551,17 @@
   function renderHabits() {
     const g = document.getElementById('habits-grid');
     g.innerHTML = habits.length ? habits.map(h=>habitCardHTML(h,true)).join('') : `<div class="empty-state"><div class="big-emoji">🌱</div><h3>No habits yet</h3><p>Click "Add New Habit" to start your journey!</p></div>`;
+    // Show free plan limit warning
+    const addBtn = document.querySelector('.btn-primary[onclick="openModal()"]');
+    if (addBtn) {
+      if (userPlan !== 'pro' && habits.length >= 3) {
+        addBtn.textContent = '🔒 Upgrade for More Habits';
+        addBtn.style.opacity = '0.7';
+      } else {
+        addBtn.textContent = '+ Add New Habit';
+        addBtn.style.opacity = '1';
+      }
+    }
   }
   function renderAllHabits() {
     const g = document.getElementById('all-habits-grid');
@@ -657,6 +673,13 @@
   window.addHabit = async function() {
     const name=document.getElementById('habit-name-input').value.trim();
     if (!name) return showToast('Please enter a habit name');
+    // 🔒 Free plan limit: max 3 habits
+    if (userPlan !== 'pro' && habits.length >= 3) {
+      window.closeModal();
+      showToast('⭐ Free plan allows 3 habits — upgrade to Pro for unlimited!');
+      setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
+      return;
+    }
     const reminder=document.getElementById('habit-reminder').value||null;
     const { data,error }=await sb.from('habits').insert({ user_id:currentUser.id, name, icon:selectedEmoji, reminder_time:reminder, current_streak:0, total_logs:0 }).select().single();
     if (error) return showToast(error.message);
