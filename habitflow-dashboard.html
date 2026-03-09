@@ -381,9 +381,14 @@
   async function init() {
     let { data: { session } } = await sb.auth.getSession();
     if (!session) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const retry = await sb.auth.getSession();
-      session = retry.data.session;
+      // Wait for Supabase to restore session from storage
+      session = await new Promise(resolve => {
+        const { data: { subscription } } = sb.auth.onAuthStateChange((_event, s) => {
+          subscription.unsubscribe();
+          resolve(s);
+        });
+        setTimeout(() => resolve(null), 3000);
+      });
     }
     if (!session) { window.location.href = 'habitflow-auth.html'; return; }
     currentUser = session.user;
