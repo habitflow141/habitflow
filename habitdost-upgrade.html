@@ -94,7 +94,7 @@
     .pricing-wrapper { max-width: 960px; margin: 0 auto; padding: 0 6% 80px; position: relative; z-index: 1; }
     .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
-    .p-card { background: #fff; border: 1.5px solid var(--border); border-radius: 24px; padding: 34px 28px; position: relative; transition: transform .2s, box-shadow .2s; }
+    .p-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 24px; padding: 34px 28px; position: relative; transition: transform .2s, box-shadow .2s; }
     .p-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px var(--shadow); }
     .p-card.popular { border-color: var(--teal); box-shadow: 0 12px 48px rgba(13,148,136,.2); transform: scale(1.03); }
     .p-card.popular:hover { transform: scale(1.03) translateY(-4px); }
@@ -131,7 +131,7 @@
     /* SUCCESS MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity .2s; backdrop-filter: blur(6px); }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal { background: #fff; border-radius: 28px; padding: 44px 36px; text-align: center; max-width: 400px; width: 100%; margin: 20px; box-shadow: 0 32px 100px rgba(0,0,0,.2); transform: scale(.9); transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .modal { background: var(--card); border-radius: 28px; padding: 44px 36px; text-align: center; max-width: 400px; width: 100%; margin: 20px; box-shadow: 0 32px 100px rgba(0,0,0,.2); transform: scale(.9); transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
     .modal-overlay.open .modal { transform: scale(1); }
     .modal-icon { font-size: 3.5rem; margin-bottom: 16px; animation: pop .4s cubic-bezier(.175,.885,.32,1.275); }
     @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
@@ -148,7 +148,7 @@
     .faq { max-width: 640px; margin: 0 auto; padding: 0 6% 80px; position: relative; z-index: 1; }
     .faq h2 { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--ink); margin-bottom: 24px; text-align: center; }
     .faq-item { border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
-    .faq-q { padding: 16px 20px; font-weight: 700; font-size: .88rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: background .2s; }
+    .faq-q { padding: 16px 20px; font-weight: 700; font-size: .88rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--card); transition: background .2s; }
     .faq-q:hover { background: var(--cream); }
     .faq-q .arrow { transition: transform .2s; color: var(--muted); }
     .faq-item.open .faq-q .arrow { transform: rotate(180deg); }
