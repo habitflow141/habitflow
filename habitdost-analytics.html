@@ -537,6 +537,11 @@
 
   // ── EXPORT CSV ──
   function exportCSV() {
+    if (userPlan !== 'pro') {
+      showToast('🔒 CSV export is a Pro feature — upgrade to unlock!');
+      setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
+      return;
+    }
     if (!habits.length) return showToast('No habits to export');
     const rows = [['Habit', 'Icon', 'Current Streak', 'Total Check-ins', 'Created']];
     habits.forEach(h => rows.push([h.name, h.icon, h.current_streak || 0, h.total_logs || 0, h.created_at?.split('T')[0]]));
@@ -549,6 +554,12 @@
 
   // ── STREAK CARD ──
   function openStreakCard() {
+    // 🔒 Shareable streak card is Annual Pro only
+    if (userPlan !== 'pro_annual') {
+      showToast('🔒 Streak card sharing is an Annual Pro feature — upgrade to unlock!');
+      setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
+      return;
+    }
     renderStreakCard();
     document.getElementById('modal-overlay').classList.add('open');
     confetti({ particleCount: 60, spread: 80, origin: { x: .5, y: .4 }, colors: ['#3ecf8e', '#0d9488', '#fbbf24'] });

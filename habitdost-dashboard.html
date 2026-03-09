@@ -595,6 +595,15 @@
   window.saveReminder = async function(id) {
     const time = document.getElementById(`rt-${id}`).value;
     if (!time) return showToast('Please pick a time first');
+    // 🔒 Free plan: only 1 reminder allowed
+    if (userPlan !== 'pro') {
+      const existingReminders = habits.filter(h => h.reminder_time && h.id !== id);
+      if (existingReminders.length >= 1) {
+        showToast('🔒 Free plan allows 1 reminder — upgrade to Pro for unlimited!');
+        setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
+        return;
+      }
+    }
     await sb.from('habits').update({ reminder_time: time }).eq('id', id);
     habits.find(h=>h.id===id).reminder_time = time;
     renderAll(); scheduleLocalReminders();
