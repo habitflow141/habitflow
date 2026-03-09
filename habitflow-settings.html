@@ -323,70 +323,52 @@
   const sb = createClient(SB_URL, SB_KEY);
   let currentUser = null;
 
-  // Apply theme immediately from localStorage so it doesn't flicker
-  const savedLocalTheme = localStorage.getItem('hf-theme') || 'forest';
-  document.body.setAttribute('data-theme', savedLocalTheme);
-  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('theme-' + savedLocalTheme)?.classList.add('selected');
+  // Apply theme from localStorage immediately
+  (function() {
+    const t = localStorage.getItem('hf-theme') || 'forest';
+    document.body.setAttribute('data-theme', t);
+    const el = document.getElementById('theme-' + t);
+    if (el) { document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+  })();
 
   async function init() {
+    // Step 1: Get session
     let session = null;
-    try {
-      const res = await sb.auth.getSession();
-      session = res.data.session;
-    } catch(e) {}
-
-    if (!session) {
-      window.location.replace(window.location.origin + '/habitflow-auth.html');
-      return;
-    }
+    try { session = (await sb.auth.getSession()).data.session; } catch(e) { console.error('Session error:', e); }
+    if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
 
-    // Get name — try multiple sources
-    const metaName = currentUser.user_metadata?.full_name 
-                  || currentUser.user_metadata?.name 
-                  || currentUser.email?.split('@')[0] 
-                  || 'User';
-
+    // Step 2: Set name immediately from email (always works)
+    const emailName = currentUser.email ? currentUser.email.split('@')[0] : 'User';
+    const metaName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || emailName;
     setName(metaName);
-    document.getElementById('profile-email').textContent = currentUser.email;
-    document.getElementById('input-email').value = currentUser.email;
+    document.getElementById('profile-email').textContent = currentUser.email || '';
+    document.getElementById('input-email').value = currentUser.email || '';
 
-    // Load profile from DB
+    // Step 3: Load from DB (bonus — overwrites if found)
     try {
-      const { data: profile } = await sb
-        .from('profiles')
-        .select('plan, theme, full_name')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (profile) {
-        const finalName = profile.full_name || metaName;
-        setName(finalName);
-
-        const plan = profile.plan || 'free';
+      const { data: p, error } = await sb.from('profiles').select('plan, theme, full_name').eq('id', currentUser.id).single();
+      if (error) console.error('Profile error:', error);
+      if (p) {
+        if (p.full_name) setName(p.full_name);
+        const plan = p.plan || 'free';
         document.getElementById('nav-plan').textContent = plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
         if (plan === 'pro') {
           document.getElementById('plan-name').textContent = '✨ Pro Plan — Active';
           document.getElementById('plan-desc').textContent = 'Unlimited habits · No ads · Full analytics';
-          document.getElementById('upgrade-btn').textContent = 'Manage Plan';
+          const btn = document.getElementById('upgrade-btn');
+          if (btn) btn.textContent = 'Manage Plan';
         }
-
-        const theme = profile.theme || savedLocalTheme;
-        applyTheme(theme, false);
+        if (p.theme) applyTheme(p.theme, false);
       }
-    } catch(e) {
-      console.log('Profile load error:', e);
-    }
+    } catch(e) { console.error('DB error:', e); }
   }
 
   function setName(name) {
-    const n = name || 'User';
-    document.getElementById('nav-name').textContent = n;
-    document.getElementById('nav-avatar').textContent = n[0].toUpperCase();
-    document.getElementById('big-avatar').textContent = n[0].toUpperCase();
-    document.getElementById('profile-name').textContent = n;
-    document.getElementById('input-name').value = n;
+    const n = (name || 'User').trim();
+    ['nav-name','profile-name'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = n; });
+    ['nav-avatar','big-avatar'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = n[0].toUpperCase(); });
+    const inp = document.getElementById('input-name'); if (inp) inp.value = n;
   }
 
   async function saveProfile() {
@@ -397,22 +379,24 @@
       await sb.from('profiles').update({ full_name: name }).eq('id', currentUser.id);
       setName(name);
       showToast('✅ Profile saved!');
-    } catch(e) {
-      showToast('Error saving profile');
-    }
+    } catch(e) { showToast('Error saving — try again'); }
   }
 
   function applyTheme(theme, save = true) {
     document.body.setAttribute('data-theme', theme);
     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('theme-' + theme)?.classList.add('selected');
+    const el = document.getElementById('theme-' + theme);
+    if (el) el.classList.add('selected');
     localStorage.setItem('hf-theme', theme);
     if (save) {
       if (currentUser) {
         sb.from('profiles').update({ theme }).eq('id', currentUser.id)
-          .then(() => showToast('🎨 ' + theme.charAt(0).toUpperCase() + theme.slice(1) + ' theme applied!'));
+          .then(({ error }) => {
+            if (error) { console.error('Theme save error:', error); showToast('Theme saved locally only'); }
+            else showToast('🎨 ' + theme.charAt(0).toUpperCase() + theme.slice(1) + ' theme applied!');
+          });
       } else {
-        showToast('🎨 Theme applied!');
+        showToast('🎨 Theme applied locally!');
       }
     }
   }
@@ -424,8 +408,8 @@
   }
 
   async function deleteAccount() {
-    if (!confirm('Are you absolutely sure? Your entire account and data will be permanently deleted.')) return;
-    if (!confirm('Last chance — this CANNOT be undone. Delete account?')) return;
+    if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+    if (!confirm('Final confirmation — delete account?')) return;
     await sb.auth.signOut();
     window.location.replace(window.location.origin + '/habitflow-auth.html');
   }
@@ -434,6 +418,7 @@
     await sb.auth.signOut();
     window.location.replace(window.location.origin + '/habitflow-auth.html');
   }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('
+  init();
+</script>
+</body>
+</html>
