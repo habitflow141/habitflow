@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /habitflow-dashboard.html
-Disallow: /habitflow-settings.html
-Disallow: /habitflow-analytics.html
+Disallow: /habitdost-dashboard.html
+Disallow: /habitdost-settings.html
+Disallow: /habitdost-analytics.html
 
-Sitemap: https://habitflow.vercel.app/sitemap.xml
+Sitemap: https://habitdost.vercel.app/sitemap.xml

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitDost — Support & Help</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+        body[data-theme="forest"] {
+      --accent: #0d9488; --accent2: #3ecf8e; --bg: #f0fdf4;
+      --mint: #3ecf8e; --teal: #0d9488; --deep: #0a6b61;
+      --cream: #f0fdf4; --leaf: #d1fae5; --card: #ffffff;
+      --ink: #0f2d25; --muted: #4b7c70; --border: #a7f3d0;
+      --sidebar: #0f2d25; --shadow: rgba(14,109,97,.1);
+    }
+    body[data-theme="ocean"] {
+      --accent: #0284c7; --accent2: #38bdf8; --bg: #f0f9ff;
+      --mint: #38bdf8; --teal: #0284c7; --deep: #0369a1;
+      --cream: #f0f9ff; --leaf: #e0f2fe; --card: #ffffff;
+      --ink: #0c2340; --muted: #4a7da8; --border: #bae6fd;
+      --sidebar: #0c2340; --shadow: rgba(2,132,199,.1);
+    }
+    body[data-theme="sunset"] {
+      --accent: #ea580c; --accent2: #fb923c; --bg: #fff7ed;
+      --mint: #fb923c; --teal: #ea580c; --deep: #c2410c;
+      --cream: #fff7ed; --leaf: #ffedd5; --card: #ffffff;
+      --ink: #3b1a08; --muted: #9a6042; --border: #fed7aa;
+      --sidebar: #3b1a08; --shadow: rgba(234,88,12,.1);
+    }
+    body[data-theme="midnight"] {
+      --accent: #7c3aed; --accent2: #a78bfa; --bg: #0f0f1a;
+      --mint: #a78bfa; --teal: #7c3aed; --deep: #5b21b6;
+      --cream: #0f0f1a; --leaf: #1e1b4b; --card: #1a1a2e;
+      --ink: #e2e8f0; --muted: #94a3b8; --border: #2d2d4e;
+      --sidebar: #0a0a14; --shadow: rgba(124,58,237,.15);
+    }
+    body[data-theme="cloud"] {
+      --accent: #6b7280; --accent2: #9ca3af; --bg: #f9fafb;
+      --mint: #9ca3af; --teal: #6b7280; --deep: #4b5563;
+      --cream: #f9fafb; --leaf: #f3f4f6; --card: #ffffff;
+      --ink: #111827; --muted: #6b7280; --border: #e5e7eb;
+      --sidebar: #111827; --shadow: rgba(107,114,128,.1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --mint:   #3ecf8e;
+      --teal:   #0d9488;
+      --deep:   #0a6b61;
+      --leaf:   #d1fae5;
+      --cream:  #f0fdf4;
+      --ink:    #0f2d25;
+      --muted:  #4b7c70;
+      --border: #a7f3d0;
+      --shadow: rgba(14,109,97,.1);
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+    /* blobs */
+    .blob { position: fixed; border-radius: 50%; filter: blur(90px); opacity: .12; pointer-events: none; z-index: 0; }
+    .blob-1 { width: 500px; height: 500px; background: var(--mint); top: -150px; left: -150px; }
+    .blob-2 { width: 350px; height: 350px; background: var(--teal); bottom: -100px; right: -100px; }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 100; background: var(--cream); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); padding: 16px 6%; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 700; color: var(--deep); display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .back-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .85rem; font-weight: 600; transition: color .2s; }
+    .back-btn:hover { color: var(--teal); }
+
+    /* HERO */
+    .hero { text-align: center; padding: 56px 6% 40px; position: relative; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--leaf); color: var(--deep); border: 1px solid var(--border); padding: 6px 16px; border-radius: 50px; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 18px; }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--ink); margin-bottom: 12px; line-height: 1.2; }
+    .hero p { color: var(--muted); font-size: .95rem; max-width: 460px; margin: 0 auto; line-height: 1.7; }
+
+    /* MAIN GRID */
+    .main-grid { display: grid; grid-template-columns: 1fr 380px; gap: 28px; max-width: 1000px; margin: 0 auto; padding: 0 6% 80px; position: relative; z-index: 1; align-items: start; }
+
+    /* FORM CARD */
+    .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 36px; box-shadow: 0 8px 40px var(--shadow); }
+    .form-card h2 { font-family: 'Lora', serif; font-size: 1.3rem; color: var(--ink); margin-bottom: 6px; }
+    .form-card .sub { font-size: .82rem; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: .8rem; font-weight: 700; color: var(--ink); margin-bottom: 7px; }
+    .field label .req { color: #ef4444; margin-left: 2px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 12px; font-family: inherit; font-size: .9rem; color: var(--ink);
+      background: var(--cream); outline: none; transition: border-color .2s, background .2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--teal); background: var(--card); box-shadow: 0 0 0 3px rgba(13,148,136,.08);
+    }
+    .field textarea { resize: vertical; min-height: 120px; }
+    .field select { cursor: pointer; }
+
+    .submit-btn {
+      width: 100%; padding: 15px; background: var(--teal); color: #fff;
+      border: none; border-radius: 50px; font-family: inherit; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: all .2s;
+      box-shadow: 0 6px 20px rgba(13,148,136,.3); margin-top: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .submit-btn:hover { background: var(--deep); transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: .7; cursor: not-allowed; transform: none; }
+    .submit-btn .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* SUCCESS STATE */
+    .success-state { display: none; text-align: center; padding: 40px 20px; }
+    .success-state .big-icon { font-size: 3.5rem; margin-bottom: 16px; animation: pop .4s cubic-bezier(.175,.885,.32,1.275); }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+    .success-state h3 { font-family: 'Lora', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 10px; }
+    .success-state p { color: var(--muted); font-size: .88rem; line-height: 1.65; margin-bottom: 24px; }
+    .success-state a { display: inline-block; padding: 12px 28px; background: var(--teal); color: #fff; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: .9rem; transition: background .2s; }
+    .success-state a:hover { background: var(--deep); }
+
+    /* INFO CARD */
+    .info-card { display: flex; flex-direction: column; gap: 16px; }
+    .info-block { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px; }
+    .info-block h3 { font-size: .88rem; font-weight: 700; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .info-block p, .info-block a { font-size: .82rem; color: var(--muted); line-height: 1.7; text-decoration: none; }
+    .info-block a { color: var(--teal); font-weight: 600; }
+    .info-block a:hover { color: var(--deep); }
+
+    .response-time { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .response-time:last-child { border: none; padding-bottom: 0; }
+    .rt-icon { font-size: 1.2rem; width: 28px; text-align: center; }
+    .rt-label { font-size: .8rem; font-weight: 700; color: var(--ink); }
+    .rt-time { font-size: .75rem; color: var(--muted); }
+
+    .topic-btn { display: block; width: 100%; text-align: left; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--cream); color: var(--ink); font-family: inherit; font-size: .82rem; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: all .2s; }
+    .topic-btn:last-child { margin-bottom: 0; }
+    .topic-btn:hover { background: var(--leaf); border-color: var(--teal); }
+
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-theme="forest">
+<script>
+  // Apply theme instantly before page renders
+  (function() {
+    const t = localStorage.getItem('hf-theme') || 'forest';
+    document.body.setAttribute('data-theme', t);
+  })();
+</script>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <nav>
+    <a href="habitdost-landing.html" class="logo">
+      <img src="logo.svg" width="26" height="26" style="border-radius:7px" alt="" />
+      <span>HabitDost</span>
+    </a>
+    <a href="habitdost-landing.html" class="back-btn">← Back to Home</a>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge">💬 Support</div>
+    <h1>How can we help you?</h1>
+    <p>Fill out the form below and we'll get back to you within 24 hours. We read every message personally.</p>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- FORM -->
+    <div class="form-card">
+      <h2>Send us a message</h2>
+      <p class="sub">Got a question, issue, or want a refund? Just fill this out — we'll sort it out fast.</p>
+
+      <!-- The form — replace mbdzdyqr with Formspree ID -->
+      <form id="support-form" action="https://formspree.io/f/mbdzdyqr" method="POST" onsubmit="handleSubmit(event)">
+
+        <div class="form-row">
+          <div class="field">
+            <label>First Name <span class="req">*</span></label>
+            <input type="text" name="first_name" placeholder="Ayush" required />
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <input type="text" name="last_name" placeholder="Rawat" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <input type="email" name="email" placeholder="you@email.com" required />
+        </div>
+
+        <div class="field">
+          <label>Transaction ID <span style="font-size:.72rem;color:var(--muted);font-weight:400">(if payment related — find it in Razorpay confirmation email)</span></label>
+          <input type="text" name="transaction_id" placeholder="e.g. pay_PxxxxxxxxxXXXX" />
+        </div>
+
+        <div class="field">
+          <label>Topic <span class="req">*</span></label>
+          <select name="topic" required>
+            <option value="" disabled selected>Select a topic</option>
+            <option value="refund">💰 Refund Request</option>
+            <option value="payment_issue">💳 Payment Issue</option>
+            <option value="pro_not_activated">✨ Pro Not Activated</option>
+            <option value="bug_report">🐛 Bug / Something Broken</option>
+            <option value="feature_request">💡 Feature Request</option>
+            <option value="account">👤 Account Issue</option>
+            <option value="other">💬 Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Your Message <span class="req">*</span></label>
+          <textarea name="message" placeholder="Describe your issue in detail. The more info you share, the faster we can help..." required></textarea>
+        </div>
+
+        <!-- Hidden field to identify it's from HabitDost -->
+        <input type="hidden" name="_subject" value="HabitDost Support Request" />
+
+        <button type="submit" class="submit-btn" id="submit-btn">
+          <span id="btn-text">Send Message →</span>
+        </button>
+
+      </form>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="success-state">
+        <div class="big-icon">✅</div>
+        <h3>Message received!</h3>
+        <p>We'll get back to you at your email within 24 hours. If it's a refund request, we'll process it within 2 business days.</p>
+        <a href="habitdost-dashboard.html">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <!-- INFO PANEL -->
+    <div class="info-card">
+
+      <div class="info-block">
+        <h3>📬 Contact Us Directly</h3>
+        <a href="/cdn-cgi/l/email-protection#442c25262d3022282b33757075042329252d286a272b29"><span class="__cf_email__" data-cfemail="8fe7eeede6fbe9e3e0f8bebbbecfe8e2eee6e3a1ece0e2">[email&#160;protected]</span></a>
+        <p style="margin-top:6px">For urgent issues, email us directly.</p>
+      </div>
+
+      <div class="info-block">
+        <h3>⏱ Response Times</h3>
+        <div class="response-time">
+          <div class="rt-icon">💰</div>
+          <div><div class="rt-label">Refund Requests</div><div class="rt-time">Within 2 business days</div></div>
+        </div>
+        <div class="response-time">
+          <div class="rt-icon">💳</div>
+          <div><div class="rt-label">Payment Issues</div><div class="rt-time">Within 24 hours</div></div>
+        </div>
+        <div class="response-time">
+          <div class="rt-icon">🐛</div>
+          <div><div class="rt-label">Bug Reports</div><div class="rt-time">Within 48 hours</div></div>
+        </div>
+        <div class="response-time">
+          <div class="rt-icon">💡</div>
+          <div><div class="rt-label">Feature Requests</div><div class="rt-time">We read all of them!</div></div>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <h3>❓ Common Questions</h3>
+        <button class="topic-btn" onclick="fillTopic('refund')">💰 How do I get a refund?</button>
+        <button class="topic-btn" onclick="fillTopic('pro_not_activated')">✨ My Pro didn't activate</button>
+        <button class="topic-btn" onclick="fillTopic('payment_issue')">💳 My payment failed</button>
+        <button class="topic-btn" onclick="fillTopic('bug_report')">🐛 Report a bug</button>
+      </div>
+
+      <div class="info-block">
+        <h3>📋 Refund Policy</h3>
+        <p>We offer a full refund within <strong>7 days</strong> of purchase — no questions asked. Just submit a refund request with your Transaction ID and we'll process it within 2 business days.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    function fillTopic(value) {
+      document.querySelector('select[name="topic"]').value = value;
+      document.querySelector('select[name="topic"]').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const btnText = document.getE

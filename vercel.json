@@ -4,17 +4,17 @@
   "redirects": [
     {
       "source": "/dashboard",
-      "destination": "/habitflow-dashboard",
+      "destination": "/habitdost-dashboard",
       "permanent": false
     },
     {
       "source": "/login",
-      "destination": "/habitflow-auth",
+      "destination": "/habitdost-auth",
       "permanent": false
     },
     {
       "source": "/upgrade",
-      "destination": "/habitflow-upgrade",
+      "destination": "/habitdost-upgrade",
       "permanent": false
     }
   ],
