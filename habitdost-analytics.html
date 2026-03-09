@@ -415,10 +415,8 @@
     const { data: h } = await sb.from('habits').select('*').eq('user_id', currentUser.id).eq('is_active', true).order('created_at');
     habits = h || [];
 
-    // Get last 30 days of logs
-    const from = new Date(); from.setDate(from.getDate() - 29);
-    const fromStr = from.toISOString().split('T')[0];
-    const { data: l } = await sb.from('habit_logs').select('*').eq('user_id', currentUser.id).gte('completed_date', fromStr).order('completed_date');
+    // Get ALL logs from the beginning (join date)
+    const { data: l } = await sb.from('habit_logs').select('*').eq('user_id', currentUser.id).order('completed_date');
     allLogs = l || [];
   }
 
@@ -445,43 +443,48 @@
     const grid = document.getElementById('heatmap-grid');
     if (!habits.length) { grid.innerHTML = `<div class="empty-state"><div class="big-emoji">🌱</div><h3>No data yet</h3></div>`; return; }
 
-    // Build date → count map
+    // Build date → count map from all logs
     const logMap = {};
     allLogs.forEach(l => { logMap[l.completed_date] = (logMap[l.completed_date] || 0) + 1; });
 
-    // Generate last 28 days — align grid to start from Monday
+    // Start from user's actual join date
+    const joinDateStr = currentUser.created_at ? currentUser.created_at.split('T')[0] : today;
+    const joinDate = new Date(joinDateStr + 'T00:00:00');
+    const todayDate = new Date(today + 'T00:00:00');
+
+    // Generate every single day from join date → today (no skipping)
     const days = [];
-    for (let i = 27; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      days.push(d.toISOString().split('T')[0]);
+    const cursor = new Date(joinDate);
+    while (cursor <= todayDate) {
+      days.push(cursor.toISOString().split('T')[0]);
+      cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Find what day of week the first day is (0=Sun,1=Mon,...6=Sat)
-    // We want Monday as column 0, so pad with empty cells if needed
-    const firstDay = new Date(days[0]);
+    // Day labels rotate starting from the actual join day
     // getDay(): 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-    // Convert to Mon-based: Mon=0, Tue=1, ..., Sun=6
-    const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
+    const allDayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const joinDayIndex = joinDate.getDay(); // e.g. Tuesday = 2
+    // Build 7 labels starting from join day
+    const rotatedLabels = [];
+    for (let i = 0; i < 7; i++) {
+      rotatedLabels.push(allDayNames[(joinDayIndex + i) % 7]);
+    }
+    const labelsHTML = rotatedLabels.map(d =>
+      `<div style="text-align:center;font-size:.6rem;font-weight:700;color:var(--muted);padding-bottom:6px">${d}</div>`
+    ).join('');
 
+    // NO padding cells — first cell is always the join date (column 0)
     const max = habits.length || 1;
-    
-    // Add day labels row (Mon-Sun)
-    const dayLabels = ['M','T','W','T','F','S','S'];
-    const labelsHTML = dayLabels.map(d => `<div style="text-align:center;font-size:.65rem;font-weight:700;color:var(--muted);padding-bottom:4px">${d}</div>`).join('');
-    
-    // Add empty padding cells for alignment
-    const paddingCells = Array(firstDayOfWeek).fill('<div class="heat-cell" style="opacity:0;pointer-events:none"></div>').join('');
-    
     const cellsHTML = days.map(date => {
       const count = logMap[date] || 0;
       const lvl = count === 0 ? 0 : count >= max ? 4 : count >= max * .75 ? 3 : count >= max * .5 ? 2 : 1;
       const isToday = date === today;
-      const d = new Date(date);
-      const label = d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
-      return `<div class="heat-cell h${lvl}" title="${label}: ${count} habit${count !== 1 ? 's' : ''} completed" style="${isToday ? 'outline:2px solid var(--teal);outline-offset:1px' : ''}"></div>`;
+      const d = new Date(date + 'T00:00:00');
+      const label = d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      return `<div class="heat-cell h${lvl}" title="${label}: ${count} habit${count !== 1 ? 's' : ''} completed" style="${isToday ? 'outline:2px solid var(--teal);outline-offset:2px;border-radius:4px' : ''}"></div>`;
     }).join('');
 
-    grid.innerHTML = labelsHTML + paddingCells + cellsHTML;
+    grid.innerHTML = labelsHTML + cellsHTML;
   }
 
   function renderMonthlyChart() {
