@@ -328,14 +328,14 @@
     let { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
-    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     document.getElementById('nav-name').textContent = name;
     document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
     document.getElementById('sc-name').textContent = name;
     document.getElementById('sc-date').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('month-label').textContent = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
-    const { data: profile } = await sb.from('profiles').select('plan').eq('id', currentUser.id).single();
+    const { data: profile } = await sb.from('profiles').select('plan, full_name').eq('id', currentUser.id).single();
     document.getElementById('nav-plan').textContent = profile?.plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
 
     await loadData();

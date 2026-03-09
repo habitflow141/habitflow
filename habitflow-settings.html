@@ -328,7 +328,7 @@
     if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
 
-    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     document.getElementById('nav-name').textContent = name;
     document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
     document.getElementById('big-avatar').textContent = name[0].toUpperCase();
@@ -337,9 +337,19 @@
     document.getElementById('input-name').value = name;
     document.getElementById('input-email').value = currentUser.email;
 
-    const { data: profile } = await sb.from('profiles').select('plan, theme').eq('id', currentUser.id).single();
+    const { data: profile } = await sb.from('profiles').select('plan, theme, full_name').eq('id', currentUser.id).single();
     const plan = profile?.plan || 'free';
     const savedTheme = profile?.theme || localStorage.getItem('hf-theme') || 'forest';
+    
+    // Use profile name from DB if user_metadata is empty
+    const dbName = profile?.full_name;
+    if (dbName) {
+      document.getElementById('nav-name').textContent = dbName;
+      document.getElementById('nav-avatar').textContent = dbName[0].toUpperCase();
+      document.getElementById('big-avatar').textContent = dbName[0].toUpperCase();
+      document.getElementById('profile-name').textContent = dbName;
+      document.getElementById('input-name').value = dbName;
+    }
 
     document.getElementById('nav-plan').textContent = plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
     if (plan === 'pro') {

@@ -380,7 +380,7 @@
     let { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
-    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     document.getElementById('nav-name').textContent = name;
     document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
     document.getElementById('greeting').textContent = `${getGreeting(name)}`;
