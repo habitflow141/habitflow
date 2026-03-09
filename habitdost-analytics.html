@@ -120,7 +120,7 @@
     .heatmap-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
     .month-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
     .heatmap-grid { display: grid; grid-template-columns: repeat(7, 28px); gap: 4px; }
-    .day-label-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+    .day-label-row { display: grid; grid-template-columns: repeat(7, 28px); gap: 4px; margin-bottom: 6px; }
     .day-lbl { font-size: .65rem; font-weight: 700; color: var(--muted); text-align: center; text-transform: uppercase; }
     .heat-cell { width: 28px; height: 28px; border-radius: 4px; cursor: pointer; transition: transform .15s; position: relative; }
     .heat-cell:hover { transform: scale(1.2); z-index: 2; }
@@ -443,46 +443,55 @@
     const logMap = {};
     allLogs.forEach(l => { logMap[l.completed_date] = (logMap[l.completed_date] || 0) + 1; });
 
-    // Start from user's actual join date
-    const joinDateStr = currentUser.created_at ? currentUser.created_at.split('T')[0] : today;
-    const joinDate = new Date(joinDateStr + 'T00:00:00');
-    const todayDate = new Date(today + 'T00:00:00');
+    // Helper: local date string (avoids UTC offset issues for IST users)
+    const toLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
-    // Generate every single day from join date → today (no skipping)
-    // Use local date string to avoid UTC offset issues (e.g. IST = UTC+5:30)
-    const toLocalDateStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const days = [];
-    const cursor = new Date(joinDate);
+    // User's actual join date
+    const joinDateStr = currentUser.created_at ? currentUser.created_at.split('T')[0] : today;
+    const joinDate = new Date(joinDateStr + 'T12:00:00'); // noon to avoid DST issues
+
+    // Step back to Monday of the join week
+    // getDay(): 0=Sun,1=Mon,...,6=Sat. Mon-based offset: Mon=0...Sun=6
+    const joinDayOfWeek = (joinDate.getDay() + 6) % 7; // Mon=0, Tue=1, ..., Sun=6
+    const weekStart = new Date(joinDate);
+    weekStart.setDate(weekStart.getDate() - joinDayOfWeek); // go back to Monday
+
+    const todayDate = new Date(today + 'T12:00:00');
+
+    // Generate every day from week start → today
+    const cursor = new Date(weekStart);
+    const allCells = []; // { dateStr, isBeforeJoin }
     while (cursor <= todayDate) {
-      days.push(toLocalDateStr(cursor));
+      allCells.push({ dateStr: toLocal(cursor), isBeforeJoin: cursor < joinDate });
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Day labels rotate starting from the actual join day
-    // getDay(): 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-    const allDayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const joinDayIndex = joinDate.getDay(); // e.g. Tuesday = 2
-    // Build 7 labels starting from join day
-    const rotatedLabels = [];
-    for (let i = 0; i < 7; i++) {
-      rotatedLabels.push(allDayNames[(joinDayIndex + i) % 7]);
+    // Fixed day labels: always Mon → Sun (since grid always starts on Monday)
+    const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+    // Update the existing day-label-row in HTML (if present), else inject above grid
+    let labelRow = grid.previousElementSibling;
+    if (!labelRow || !labelRow.classList.contains('day-label-row')) {
+      labelRow = document.createElement('div');
+      labelRow.className = 'day-label-row';
+      grid.parentNode.insertBefore(labelRow, grid);
     }
-    const labelsHTML = rotatedLabels.map(d =>
-      `<div style="text-align:center;font-size:.6rem;font-weight:700;color:var(--muted);padding-bottom:6px">${d}</div>`
-    ).join('');
+    labelRow.innerHTML = dayNames.map(d => `<div class="day-lbl">${d}</div>`).join('');
 
-    // NO padding cells — first cell is always the join date (column 0)
+    // Render cells
     const max = habits.length || 1;
-    const cellsHTML = days.map(date => {
-      const count = logMap[date] || 0;
+    grid.innerHTML = allCells.map(({ dateStr, isBeforeJoin }) => {
+      if (isBeforeJoin) {
+        // Days before join — show as invisible placeholder (keeps grid alignment)
+        return `<div class="heat-cell" style="opacity:0;pointer-events:none"></div>`;
+      }
+      const count = logMap[dateStr] || 0;
       const lvl = count === 0 ? 0 : count >= max ? 4 : count >= max * .75 ? 3 : count >= max * .5 ? 2 : 1;
-      const isToday = date === today;
-      const d = new Date(date + 'T00:00:00');
+      const isToday = dateStr === today;
+      const d = new Date(dateStr + 'T12:00:00');
       const label = d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-      return `<div class="heat-cell h${lvl}" title="${label}: ${count} habit${count !== 1 ? 's' : ''} completed" style="${isToday ? 'outline:2px solid var(--teal);outline-offset:2px;border-radius:4px' : ''}"></div>`;
+      return `<div class="heat-cell h${lvl}" title="${label}: ${count} habit${count !== 1 ? 's' : ''} completed" style="${isToday ? 'outline:2px solid var(--teal);outline-offset:2px' : ''}"></div>`;
     }).join('');
-
-    grid.innerHTML = labelsHTML + cellsHTML;
   }
 
   function renderMonthlyChart() {
