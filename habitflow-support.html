@@ -7,6 +7,41 @@
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <style>
+    body[data-theme="forest"] {
+      --accent: #0d9488; --accent2: #3ecf8e; --bg: #f0fdf4;
+      --mint: #3ecf8e; --teal: #0d9488; --deep: #0a6b61;
+      --cream: #f0fdf4; --leaf: #d1fae5; --card: #ffffff;
+      --ink: #0f2d25; --muted: #4b7c70; --border: #a7f3d0;
+      --sidebar: #0f2d25; --shadow: rgba(14,109,97,.1);
+    }
+    body[data-theme="ocean"] {
+      --accent: #0284c7; --accent2: #38bdf8; --bg: #f0f9ff;
+      --mint: #38bdf8; --teal: #0284c7; --deep: #0369a1;
+      --cream: #f0f9ff; --leaf: #e0f2fe; --card: #ffffff;
+      --ink: #0c2340; --muted: #4a7da8; --border: #bae6fd;
+      --sidebar: #0c2340; --shadow: rgba(2,132,199,.1);
+    }
+    body[data-theme="sunset"] {
+      --accent: #ea580c; --accent2: #fb923c; --bg: #fff7ed;
+      --mint: #fb923c; --teal: #ea580c; --deep: #c2410c;
+      --cream: #fff7ed; --leaf: #ffedd5; --card: #ffffff;
+      --ink: #3b1a08; --muted: #9a6042; --border: #fed7aa;
+      --sidebar: #3b1a08; --shadow: rgba(234,88,12,.1);
+    }
+    body[data-theme="midnight"] {
+      --accent: #7c3aed; --accent2: #a78bfa; --bg: #0f0f1a;
+      --mint: #a78bfa; --teal: #7c3aed; --deep: #5b21b6;
+      --cream: #0f0f1a; --leaf: #1e1b4b; --card: #1a1a2e;
+      --ink: #e2e8f0; --muted: #94a3b8; --border: #2d2d4e;
+      --sidebar: #0a0a14; --shadow: rgba(124,58,237,.15);
+    }
+    body[data-theme="cloud"] {
+      --accent: #6b7280; --accent2: #9ca3af; --bg: #f9fafb;
+      --mint: #9ca3af; --teal: #6b7280; --deep: #4b5563;
+      --cream: #f9fafb; --leaf: #f3f4f6; --card: #ffffff;
+      --ink: #111827; --muted: #6b7280; --border: #e5e7eb;
+      --sidebar: #111827; --shadow: rgba(107,114,128,.1);
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --mint:   #3ecf8e;
@@ -106,7 +141,14 @@
     }
   </style>
 </head>
-<body>
+<body data-theme="forest">
+<script>
+  // Apply theme instantly before page renders
+  (function() {
+    const t = localStorage.getItem('hf-theme') || 'forest';
+    document.body.setAttribute('data-theme', t);
+  })();
+</script>
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
 
@@ -131,8 +173,8 @@
       <h2>Send us a message</h2>
       <p class="sub">Got a question, issue, or want a refund? Just fill this out — we'll sort it out fast.</p>
 
-      <!-- The form — replace YOUR_FORM_ID with Formspree ID -->
-      <form id="support-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" onsubmit="handleSubmit(event)">
+      <!-- The form — replace mbdzdyqr with Formspree ID -->
+      <form id="support-form" action="https://formspree.io/f/mbdzdyqr" method="POST" onsubmit="handleSubmit(event)">
 
         <div class="form-row">
           <div class="field">
@@ -197,7 +239,7 @@
 
       <div class="info-block">
         <h3>📬 Contact Us Directly</h3>
-        <a href="mailto:habitflow141@gmail.com">habitflow141@gmail.com</a>
+        <a href="/cdn-cgi/l/email-protection#0e666f6c677a686261793f3a3f4e69636f6762206d6163"><span class="__cf_email__" data-cfemail="204841424954464c4f5711141160474d41494c0e434f4d">[email&#160;protected]</span></a>
         <p style="margin-top:6px">For urgent issues, email us directly.</p>
       </div>
 
@@ -237,7 +279,7 @@
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     function fillTopic(value) {
       document.querySelector('select[name="topic"]').value = value;
       document.querySelector('select[name="topic"]').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -255,13 +297,4 @@
       const form = document.getElementById('support-form');
       const data = new FormData(form);
 
-      try {
-        const res = await fetch(form.action, {
-          method: 'POST',
-          body: data,
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (res.ok) {
-          form.style.display = 'none';
-          document.g
+    
