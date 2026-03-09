@@ -144,7 +144,14 @@
   </style>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 </head>
-<body>
+<body data-theme="forest">
+<script>
+  // Apply theme instantly before page renders
+  (function() {
+    const t = localStorage.getItem('hf-theme') || 'forest';
+    document.body.setAttribute('data-theme', t);
+  })();
+</script>
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
 
@@ -305,7 +312,12 @@
       currentUser = session.user;
 
       // Check current plan
-      const { data: profile } = await sb.from('profiles').select('plan').eq('id', currentUser.id).single();
+      const { data: profile } = await sb.from('profiles').select('plan, theme, full_name').eq('id', currentUser.id).single();
+      // Apply theme
+      if (profile?.theme) {
+        document.body.setAttribute('data-theme', profile.theme);
+        localStorage.setItem('hf-theme', profile.theme);
+      }
       const plan = profile?.plan || 'free';
       if (plan === 'pro') {
         document.getElementById('plan-banner-title').textContent = '✅ You\'re already on Pro!';

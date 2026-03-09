@@ -209,7 +209,14 @@
   </style>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 </head>
-<body>
+<body data-theme="forest">
+<script>
+  // Apply theme instantly before page renders
+  (function() {
+    const t = localStorage.getItem('hf-theme') || 'forest';
+    document.body.setAttribute('data-theme', t);
+  })();
+</script>
 
 <!-- MOBILE TOPBAR -->
 <div class="mobile-topbar">
@@ -381,6 +388,18 @@
     if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
+    // Load theme from DB
+    sb.from('profiles').select('theme, full_name').eq('id', currentUser.id).single().then(({ data: p }) => {
+      if (p?.theme) {
+        document.body.setAttribute('data-theme', p.theme);
+        localStorage.setItem('hf-theme', p.theme);
+      }
+      if (p?.full_name) {
+        document.getElementById('nav-name').textContent = p.full_name;
+        const av = document.getElementById('nav-avatar');
+        if (av) av.textContent = p.full_name[0].toUpperCase();
+      }
+    });
     document.getElementById('nav-name').textContent = name;
     document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
     document.getElementById('greeting').textContent = `${getGreeting(name)}`;
