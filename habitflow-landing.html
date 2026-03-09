@@ -66,7 +66,7 @@
       background: rgba(240,253,244,.85);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
-      animation: slideDown .6s ease both;
+
     }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -127,7 +127,7 @@
       padding: 7px 16px; border-radius: 50px;
       font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
       margin-bottom: 24px;
-      animation: fadeUp .6s ease forwards;
+
     }
     .hero-badge span { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); display: block; animation: pulse 1.8s infinite; }
     @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .5; } }
@@ -139,7 +139,7 @@
       color: var(--ink);
       max-width: 760px;
       margin-bottom: 22px;
-      animation: fadeUp .6s ease forwards;
+
     }
     .hero h1 em { color: var(--teal); font-style: italic; }
 
@@ -149,12 +149,12 @@
       max-width: 520px;
       line-height: 1.7;
       margin-bottom: 40px;
-      animation: fadeUp .6s ease forwards;
+
     }
 
     .hero-btns {
       display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
-      animation: fadeUp .6s ease forwards;
+
     }
     .btn-primary {
       background: var(--teal); color: #fff;
@@ -184,7 +184,7 @@
       padding: 28px 32px;
       box-shadow: 0 20px 60px var(--shadow);
       max-width: 520px; width: 100%;
-      animation: fadeUp .6s ease forwards;
+
     }
     .card-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
     .habit-list { display: flex; flex-direction: column; gap: 12px; }
@@ -214,7 +214,7 @@
       border: 2px dashed var(--border); flex-shrink: 0;
     }
 
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
 
     /* ─── SECTION SHARED ─── */
     section { position: relative; z-index: 1; }
@@ -488,7 +488,7 @@
 
     /* ─── SCROLL REVEAL ─── */
     .reveal {
-      opacity: 0; transform: translateY(24px);
+      opacity: 1; transform: none;
       transition: opacity .7s ease, transform .7s ease;
     }
     .reveal.visible { opacity: 1; transform: none; }
