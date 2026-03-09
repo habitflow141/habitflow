@@ -352,6 +352,7 @@
   const { createClient } = supabase;
   const sb = createClient(SB_URL, SB_KEY);
   let currentUser = null;
+  let userPlan = "free";
 
   // Apply theme from localStorage immediately
   (function() {
@@ -383,6 +384,7 @@
         if (p.full_name) setName(p.full_name);
         const plan = p.plan || 'free';
         document.getElementById('nav-plan').textContent = plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
+        userPlan = plan;
         if (plan === 'pro') {
           document.getElementById('plan-name').textContent = '✨ Pro Plan — Active';
           document.getElementById('plan-desc').textContent = 'Unlimited habits · No ads · Full analytics';
@@ -390,6 +392,25 @@
           if (btn) btn.textContent = 'Manage Plan';
         }
         if (p.theme) applyTheme(p.theme, false);
+        
+        // 🔒 Lock themes for free users — only Forest allowed
+        if (plan !== 'pro') {
+          ['ocean','sunset','midnight','cloud'].forEach(t => {
+            const card = document.getElementById('theme-' + t);
+            if (card) {
+              card.style.opacity = '0.4';
+              card.style.cursor = 'not-allowed';
+              card.setAttribute('onclick', "showToast('🔒 Custom themes are a Pro feature — upgrade to unlock!')");
+              // Add lock badge
+              card.innerHTML += '<div style="position:absolute;top:6px;left:8px;font-size:.75rem">🔒</div>';
+            }
+          });
+          // Add upgrade note under themes
+          const themeGrid = document.querySelector('.theme-grid');
+          if (themeGrid && !document.getElementById('theme-upgrade-note')) {
+            themeGrid.insertAdjacentHTML('afterend', '<p id="theme-upgrade-note" style="font-size:.78rem;color:var(--muted);margin-top:10px">🔒 4 custom themes are available on <a href="habitdost-upgrade.html" style="color:var(--accent);font-weight:700">Pro plan</a></p>');
+          }
+        }
       }
     } catch(e) { console.error('DB error:', e); }
   }
@@ -413,6 +434,11 @@
   }
 
   function applyTheme(theme, save = true) {
+    // 🔒 Block non-forest themes for free users
+    if (userPlan !== 'pro' && theme !== 'forest' && save) {
+      showToast('🔒 Custom themes are a Pro feature — upgrade to unlock!');
+      return;
+    }
     document.body.setAttribute('data-theme', theme);
     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
     const el = document.getElementById('theme-' + theme);
