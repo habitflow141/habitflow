@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitDost — Page Not Found</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0fdf4; color: #0f2d25; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+    .blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: .2; pointer-events: none; }
+    .blob-1 { width: 400px; height: 400px; background: #3ecf8e; top: -100px; left: -100px; }
+    .blob-2 { width: 300px; height: 300px; background: #0d9488; bottom: -80px; right: -80px; }
+    .content { position: relative; z-index: 1; }
+    .emoji { font-size: 5rem; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    h1 { font-family: 'Lora', serif; font-size: clamp(2rem, 5vw, 3.5rem); color: #0f2d25; margin-bottom: 12px; }
+    p { color: #4b7c70; font-size: 1rem; line-height: 1.7; max-width: 380px; margin: 0 auto 32px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; background: #0d9488; color: #fff; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: .95rem; box-shadow: 0 6px 20px rgba(13,148,136,.3); transition: all .2s; }
+    .btn:hover { background: #0a6b61; transform: translateY(-2px); }
+    .logo { font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 700; color: #0a6b61; display: flex; align-items: center; gap: 6px; justify-content: center; margin-bottom: 40px; text-decoration: none; }
+    .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: #3ecf8e; }
+  </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="content">
+    <a href="habitdost-landing.html" class="logo"><span class="logo-dot"></span>HabitDost</a>
+    <div class="emoji">🔍</div>
+    <h1>Page not found</h1>
+    <p>Looks like this page went on a streak break. Let's get you back on track.</p>
+    <a href="habitdost-landing.html" class="btn">← Back to Home</a>
+  </div>
+</body>
+</html>
