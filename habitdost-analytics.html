@@ -119,13 +119,14 @@
     /* HEATMAP */
     .heatmap-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
     .month-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+    .heatmap-wrap { overflow-x: auto; }
     .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
     .day-label-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 8px; }
     .day-lbl { font-size: .68rem; font-weight: 700; color: var(--muted); text-align: center; text-transform: uppercase; }
-    .heat-cell { aspect-ratio: 1; border-radius: 5px; cursor: pointer; transition: transform .15s; position: relative; min-height: 18px; }
-    .heat-cell:hover { transform: scale(1.15); z-index: 2; }
-    .heat-future { background: var(--border) !important; opacity: 0.3; cursor: default; }
-    .heat-empty { background: transparent !important; pointer-events: none; }
+    .heat-cell { height: 32px; border-radius: 5px; cursor: pointer; transition: transform .15s; }
+    .heat-cell:hover { transform: scale(1.1); z-index: 2; position: relative; }
+    .heat-future { background: var(--border) !important; opacity: 0.25; cursor: default; }
+    .heat-empty { background: var(--leaf) !important; opacity: 0.25; pointer-events: none; }
     .h0 { background: var(--leaf); }
     .h1 { background: #6ee7b7; }
     .h2 { background: #34d399; }
@@ -448,33 +449,48 @@
     const logMap = {};
     allLogs.forEach(l => { logMap[l.completed_date] = (logMap[l.completed_date] || 0) + 1; });
 
-    // User join date
-    const joinDateStr = currentUser.created_at ? currentUser.created_at.split('T')[0] : today;
-    const joinDate = new Date(joinDateStr + 'T12:00:00');
     const todayDate = new Date(today + 'T12:00:00');
 
-    // Always show exactly 4 full weeks (28 cells) ending on Sunday of current week
-    // Grid start = Monday of (this week - 3 weeks)
-    const thisMondayOffset = (todayDate.getDay() + 6) % 7; // days since Monday
+    // Use FIRST LOG DATE as start reference (not join date)
+    // If no logs yet, use today as start
+    const sortedLogDates = Object.keys(logMap).sort();
+    const firstLogDateStr = sortedLogDates.length > 0 ? sortedLogDates[0] : today;
+    const firstLogDate = new Date(firstLogDateStr + 'T12:00:00');
+
+    // Grid always starts from Monday of the week containing the first log
+    // and always ends on Sunday of the current week
+    // Minimum 4 weeks shown always
+    const thisMondayOffset = (todayDate.getDay() + 6) % 7;
     const thisMonday = new Date(todayDate);
     thisMonday.setDate(thisMonday.getDate() - thisMondayOffset);
-    const gridStart = new Date(thisMonday);
-    gridStart.setDate(gridStart.getDate() - 21); // go back 3 more weeks = 4 weeks total
-    const gridEnd = new Date(thisMonday);
-    gridEnd.setDate(gridEnd.getDate() + 6); // this Sunday
 
-    // Generate all 28 cells (Mon to Sun × 4 weeks)
+    // Monday of first log week
+    const firstLogMondayOffset = (firstLogDate.getDay() + 6) % 7;
+    const firstLogMonday = new Date(firstLogDate);
+    firstLogMonday.setDate(firstLogMonday.getDate() - firstLogMondayOffset);
+
+    // Grid start = earlier of (firstLogMonday) or (thisMonday - 3 weeks)
+    const fourWeeksAgo = new Date(thisMonday);
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 21);
+    const gridStart = firstLogMonday < fourWeeksAgo ? firstLogMonday : fourWeeksAgo;
+
+    // Grid end = this Sunday
+    const gridEnd = new Date(thisMonday);
+    gridEnd.setDate(gridEnd.getDate() + 6);
+
+    // Generate all cells from gridStart → gridEnd
     const cursor = new Date(gridStart);
     const allCells = [];
     while (cursor <= gridEnd) {
       const dateStr = toLocal(cursor);
       const isFuture = cursor > todayDate;
-      const isBeforeJoin = cursor < joinDate;
-      allCells.push({ dateStr, isFuture, isBeforeJoin });
+      // "before tracking started" = before first log date
+      const isBeforeStart = cursor < firstLogDate;
+      allCells.push({ dateStr, isFuture, isBeforeStart });
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Day labels — always Mon to Sun
+    // Day labels — always Mon → Sun
     const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     let labelRow = grid.previousElementSibling;
     if (!labelRow || !labelRow.classList.contains('day-label-row')) {
@@ -486,19 +502,17 @@
 
     // Render cells
     const max = habits.length || 1;
-    grid.innerHTML = allCells.map(({ dateStr, isFuture, isBeforeJoin }) => {
+    grid.innerHTML = allCells.map(({ dateStr, isFuture, isBeforeStart }) => {
       const d = new Date(dateStr + 'T12:00:00');
       const label = d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
       const isToday = dateStr === today;
-      const todayStyle = isToday ? 'outline:2.5px solid var(--teal);outline-offset:2px;' : '';
-
+      const todayStyle = isToday ? 'outline:2.5px solid var(--teal);outline-offset:2px;border-radius:5px;' : '';
       if (isFuture) {
-        // Future days — greyed out placeholder
-        return `<div class="heat-cell heat-future" title="${label}: future"></div>`;
+        return `<div class="heat-cell heat-future" title="${label}"></div>`;
       }
-      if (isBeforeJoin) {
-        // Before user joined — empty (not a blank, shows as very faint)
-        return `<div class="heat-cell heat-empty" title="Before you joined"></div>`;
+      if (isBeforeStart) {
+        // Days before first task — shown as faint empty boxes (no data)
+        return `<div class="heat-cell heat-empty" title="No tasks yet on ${label}"></div>`;
       }
       const count = logMap[dateStr] || 0;
       const lvl = count === 0 ? 0 : count >= max ? 4 : count >= max * .75 ? 3 : count >= max * .5 ? 2 : 1;
