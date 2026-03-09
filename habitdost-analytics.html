@@ -366,7 +366,8 @@
   const sb = createClient(SB_URL, SB_KEY);
 
   let currentUser = null, habits = [], allLogs = [];
-  const _n = new Date(); const today = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
+  const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  let today = getToday();
 
   async function init() {
     let { data: { session } } = await sb.auth.getSession();
@@ -454,6 +455,7 @@
     allLogs.forEach(l => { logMap[l.completed_date] = (logMap[l.completed_date] || 0) + 1; });
 
     // ── dates ─────────────────────────────────────────────────────────────────
+    today = getToday(); // refresh in case page loaded before midnight
     const todayDate = new Date(today + 'T12:00:00');
 
     // First task date (not join date — if no logs use today)

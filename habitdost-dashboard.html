@@ -417,7 +417,8 @@
   } catch(e) {}
 
   let currentUser = null, habits = [], todayLogs = new Set(), selectedEmoji = '🧘';
-  const today = new Date().toISOString().split('T')[0];
+  const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  let today = getToday();
 
   async function init() {
     let { data: { session } } = await sb.auth.getSession();
@@ -527,6 +528,7 @@
   }
   async function loadTodayLogs() {
     if (!habits.length) return;
+    today = getToday(); // refresh date in case page was loaded before midnight
     const { data } = await sb.from('habit_logs').select('habit_id').eq('user_id', currentUser.id).eq('completed_date', today).in('habit_id', habits.map(h=>h.id));
     todayLogs = new Set((data||[]).map(l=>l.habit_id));
   }
@@ -620,6 +622,7 @@
   window.toggleHabit = async function(id) {
     const done = todayLogs.has(id);
     if (!done) {
+      today = getToday(); // always use current local date at time of logging
       const { error } = await sb.from('habit_logs').insert({ habit_id: id, user_id: currentUser.id, completed_date: today });
       if (error) return;
       todayLogs.add(id);
@@ -656,7 +659,7 @@
 
   // ── WEEK CHART ──
   async function renderWeekChart() {
-    const dates = Array.from({length:7},(_,i)=>{ const d=new Date(); d.setDate(d.getDate()-(6-i)); return d.toISOString().split('T')[0]; });
+    const dates = Array.from({length:7},(_,i)=>{ const d=new Date(); d.setDate(d.getDate()-(6-i)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; });
     const { data:logs } = await sb.from('habit_logs').select('completed_date').eq('user_id',currentUser.id).in('completed_date',dates);
     const lm={}; (logs||[]).forEach(l=>{ lm[l.completed_date]=(lm[l.completed_date]||0)+1; });
     const max=Math.max(habits.length,1), el=document.getElementById('week-bars'); el.innerHTML='';
