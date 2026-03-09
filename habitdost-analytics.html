@@ -119,10 +119,10 @@
     /* HEATMAP */
     .heatmap-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
     .month-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
-    .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .heatmap-grid { display: grid; grid-template-columns: repeat(7, 28px); gap: 4px; }
     .day-label-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
     .day-lbl { font-size: .65rem; font-weight: 700; color: var(--muted); text-align: center; text-transform: uppercase; }
-    .heat-cell { aspect-ratio: 1; border-radius: 4px; cursor: pointer; transition: transform .15s; position: relative; }
+    .heat-cell { width: 28px; height: 28px; border-radius: 4px; cursor: pointer; transition: transform .15s; position: relative; }
     .heat-cell:hover { transform: scale(1.2); z-index: 2; }
     .h0 { background: var(--leaf); }
     .h1 { background: #6ee7b7; }
@@ -299,11 +299,7 @@
 
   <!-- HEATMAP -->
   <div class="heatmap-card">
-    <div class="section-title">Activity Heatmap <span>Last 28 days</span></div>
-    <div class="day-label-row">
-      <div class="day-lbl">Mon</div><div class="day-lbl">Tue</div><div class="day-lbl">Wed</div>
-      <div class="day-lbl">Thu</div><div class="day-lbl">Fri</div><div class="day-lbl">Sat</div><div class="day-lbl">Sun</div>
-    </div>
+    <div class="section-title">Activity Heatmap <span id="heatmap-subtitle">Since you joined</span></div>
     <div class="heatmap-grid" id="heatmap-grid"><div class="loading"><div class="spinner"></div></div></div>
     <div class="heatmap-legend">
       <span>Less</span>
@@ -453,10 +449,12 @@
     const todayDate = new Date(today + 'T00:00:00');
 
     // Generate every single day from join date → today (no skipping)
+    // Use local date string to avoid UTC offset issues (e.g. IST = UTC+5:30)
+    const toLocalDateStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const days = [];
     const cursor = new Date(joinDate);
     while (cursor <= todayDate) {
-      days.push(cursor.toISOString().split('T')[0]);
+      days.push(toLocalDateStr(cursor));
       cursor.setDate(cursor.getDate() + 1);
     }
 
