@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d9488"/>
+      <stop offset="100%" style="stop-color:#3ecf8e"/>
+    </linearGradient>
+    <linearGradient id="check" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#d1fae5;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="url(#bg)"/>
+
+  <!-- Subtle inner glow ring -->
+  <circle cx="100" cy="100" r="78" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+
+  <!-- Habit ring / circular progress -->
+  <circle cx="100" cy="100" r="58" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="10"/>
+  <circle cx="100" cy="100" r="58" fill="none" stroke="url(#check)" stroke-width="10"
+    stroke-dasharray="292" stroke-dashoffset="60"
+    stroke-linecap="round"
+    transform="rotate(-90 100 100)"/>
+
+  <!-- Checkmark -->
+  <polyline points="72,100 90,118 128,80"
+    fill="none" stroke="white" stroke-width="11"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Tiny streak dots at top right -->
+  <circle cx="148" cy="54" r="7" fill="rgba(255,255,255,0.9)"/>
+  <circle cx="164" cy="48" r="5" fill="rgba(255,255,255,0.6)"/>
+  <circle cx="176" cy="44" r="3.5" fill="rgba(255,255,255,0.35)"/>
+</svg>

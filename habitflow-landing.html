@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitFlow — Build Habits That Stick | Free Habit Tracker India</title>
+  <meta name="description" content="HabitFlow is India's most satisfying habit tracker. Build daily habits with streaks, badges, and rewards. Free to start. ₹99/month for Pro. Used by 10,000+ habit builders." />
+  <meta name="keywords" content="habit tracker india, daily habit tracker, streak app, free habit tracker, habitflow, build habits, productivity app india" />
+  <meta name="author" content="HabitFlow" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://habitflow.vercel.app/" />
+
+  <!-- Open Graph (WhatsApp, Facebook preview) -->
+  <meta property="og:title" content="HabitFlow — Build Habits That Stick" />
+  <meta property="og:description" content="Track daily habits with satisfying streaks and rewards. Free habit tracker made for India. Start today — no card needed." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://habitflow.vercel.app/" />
+  <meta property="og:image" content="https://habitflow.vercel.app/og-image.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HabitFlow — Build Habits That Stick" />
+  <meta name="twitter:description" content="India's most satisfying habit tracker. Free streaks, badges, and rewards." />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --mint:    #3ecf8e;
+      --teal:    #0d9488;
+      --deep:    #0a6b61;
+      --leaf:    #d1fae5;
+      --cream:   #f0fdf4;
+      --ink:     #0f2d25;
+      --muted:   #4b7c70;
+      --card:    #ffffff;
+      --border:  #a7f3d0;
+      --shadow:  rgba(14,109,97,.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* ─── Noise texture overlay ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: .4;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 6%;
+      background: rgba(240,253,244,.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      animation: slideDown .6s ease both;
+    }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .logo {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem; font-weight: 700;
+      color: var(--deep);
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mint); display: inline-block; }
+
+    nav ul { list-style: none; display: flex; gap: 32px; }
+    nav ul a { text-decoration: none; color: var(--muted); font-size: .9rem; font-weight: 500; transition: color .2s; }
+    nav ul a:hover { color: var(--teal); }
+
+    .nav-cta {
+      background: var(--teal); color: #fff;
+      padding: 10px 22px; border-radius: 50px;
+      font-size: .9rem; font-weight: 600;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      box-shadow: 0 4px 14px rgba(13,148,136,.3);
+    }
+    .nav-cta:hover { background: var(--deep); transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 120px 6% 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* floating blobs */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: .25; pointer-events: none;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--mint); top: -200px; left: -200px; animation: drift 12s ease-in-out infinite alternate; }
+    .blob-2 { width: 400px; height: 400px; background: var(--teal); bottom: -100px; right: -100px; animation: drift 9s ease-in-out infinite alternate-reverse; }
+    .blob-3 { width: 300px; height: 300px; background: #6ee7b7; top: 40%; left: 60%; animation: drift 15s ease-in-out infinite alternate; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px,20px) scale(1.08); } }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--leaf); color: var(--deep);
+      border: 1px solid var(--border);
+      padding: 7px 16px; border-radius: 50px;
+      font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .hero-badge span { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); display: block; animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .5; } }
+
+    .hero h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 1.18;
+      color: var(--ink);
+      max-width: 760px;
+      margin-bottom: 22px;
+      animation: fadeUp .7s .35s ease both;
+    }
+    .hero h1 em { color: var(--teal); font-style: italic; }
+
+    .hero p {
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      animation: fadeUp .7s .5s ease both;
+    }
+
+    .hero-btns {
+      display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp .7s .65s ease both;
+    }
+    .btn-primary {
+      background: var(--teal); color: #fff;
+      padding: 15px 34px; border-radius: 50px;
+      font-size: 1rem; font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 6px 24px rgba(13,148,136,.35);
+      transition: background .2s, transform .15s, box-shadow .2s;
+    }
+    .btn-primary:hover { background: var(--deep); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(13,148,136,.4); }
+    .btn-ghost {
+      background: transparent; color: var(--teal);
+      padding: 15px 34px; border-radius: 50px;
+      border: 2px solid var(--teal);
+      font-size: 1rem; font-weight: 700;
+      text-decoration: none;
+      transition: background .2s, color .2s, transform .15s;
+    }
+    .btn-ghost:hover { background: var(--teal); color: #fff; transform: translateY(-2px); }
+
+    /* ─── STREAK PREVIEW CARD ─── */
+    .hero-card {
+      margin-top: 64px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px 32px;
+      box-shadow: 0 20px 60px var(--shadow);
+      max-width: 520px; width: 100%;
+      animation: fadeUp .8s .8s ease both;
+    }
+    .card-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
+    .habit-list { display: flex; flex-direction: column; gap: 12px; }
+    .habit-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      background: var(--cream);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+    .habit-icon { font-size: 1.3rem; }
+    .habit-name { flex: 1; font-weight: 600; font-size: .9rem; color: var(--ink); }
+    .streak-pill {
+      display: flex; align-items: center; gap: 5px;
+      background: linear-gradient(135deg, var(--mint), var(--teal));
+      color: #fff;
+      font-size: .78rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 50px;
+    }
+    .check-circle {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--mint); display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; color: #fff; flex-shrink: 0;
+    }
+    .check-empty {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px dashed var(--border); flex-shrink: 0;
+    }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
+    /* ─── SECTION SHARED ─── */
+    section { position: relative; z-index: 1; }
+    .section-label {
+      display: inline-block;
+      background: var(--leaf); color: var(--deep);
+      font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 50px;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+      color: var(--ink); line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .section-sub {
+      color: var(--muted); font-size: 1rem; line-height: 1.7; max-width: 520px;
+    }
+
+    /* ─── FEATURES ─── */
+    .features {
+      padding: 100px 6%;
+      background: linear-gradient(180deg, var(--cream) 0%, #e6fdf4 100%);
+    }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .section-sub { margin: 0 auto; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .feat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      transition: transform .2s, box-shadow .2s;
+      position: relative; overflow: hidden;
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--mint), var(--teal));
+      opacity: 0; transition: opacity .2s;
+    }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px var(--shadow); }
+    .feat-card:hover::before { opacity: 1; }
+
+    .feat-icon {
+      width: 52px; height: 52px;
+      background: var(--leaf); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 18px;
+    }
+    .feat-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+    .feat-card p { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+
+    /* ─── STREAK SHOWCASE ─── */
+    .streak-section {
+      padding: 100px 6%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .streak-visual {
+      background: var(--ink);
+      border-radius: 28px;
+      padding: 36px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.15);
+      position: relative; overflow: hidden;
+    }
+    .streak-visual::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 70% 20%, rgba(62,207,142,.15), transparent 60%);
+    }
+    .streak-visual .week-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: #6ee7b7; margin-bottom: 20px; font-weight: 700; }
+    .heat-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+    .heat-cell {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      transition: transform .15s;
+      cursor: pointer;
+    }
+    .heat-cell:hover { transform: scale(1.15); }
+    .h0 { background: rgba(255,255,255,.07); }
+    .h1 { background: #134e4a; }
+    .h2 { background: #0d9488; }
+    .h3 { background: #2dd4bf; }
+    .h4 { background: #6ee7b7; }
+
+    .streak-badge-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .s-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 50px; padding: 8px 16px;
+      color: #fff;
+    }
+    .s-badge .num { font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 700; color: var(--mint); }
+    .s-badge .lbl { font-size: .75rem; color: rgba(255,255,255,.6); }
+
+    .streak-text .section-sub { max-width: 400px; }
+    .streak-text ul { list-style: none; margin-top: 28px; display: flex; flex-direction: column; gap: 14px; }
+    .streak-text ul li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: .9rem; color: var(--muted); line-height: 1.6;
+    }
+    .bullet-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--leaf); flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; color: var(--teal); font-weight: 800;
+    }
+
+    /* ─── PRICING ─── */
+    .pricing {
+      padding: 100px 6%;
+      background: linear-gradient(180deg, #e6fdf4 0%, var(--cream) 100%);
+    }
+    .pricing-header { text-align: center; margin-bottom: 56px; }
+    .pricing-header .section-sub { margin: 0 auto; }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 900px; margin: 0 auto;
+    }
+    .p-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px 30px;
+      position: relative;
+    }
+    .p-card.popular {
+      border-color: var(--teal);
+      box-shadow: 0 16px 56px rgba(13,148,136,.2);
+      transform: scale(1.02);
+    }
+    .popular-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--mint), var(--teal));
+      color: #fff; font-size: .7rem; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 18px; border-radius: 50px;
+      white-space: nowrap;
+    }
+    .p-plan { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+    .p-price {
+      font-family: 'Lora', serif;
+      font-size: 3rem; font-weight: 700; color: var(--ink);
+      line-height: 1; margin-bottom: 4px;
+    }
+    .p-price sup { font-size: 1.3rem; vertical-align: super; }
+    .p-price sub { font-size: 1rem; font-weight: 400; color: var(--muted); }
+    .p-save { font-size: .8rem; color: var(--teal); font-weight: 600; margin-bottom: 24px; min-height: 20px; }
+    .p-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .p-features { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-bottom: 30px; }
+    .p-features li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: .88rem; color: var(--ink);
+    }
+    .p-features li .tick { color: var(--teal); font-weight: 800; font-size: .9rem; }
+    .p-features li .cross { color: #d1d5db; font-size: .9rem; }
+    .p-features li.muted-feat { color: var(--muted); }
+
+    .p-btn {
+      display: block; text-align: center;
+      padding: 13px; border-radius: 50px;
+      font-weight: 700; font-size: .95rem;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .p-btn-filled { background: var(--teal); color: #fff; box-shadow: 0 4px 16px rgba(13,148,136,.3); }
+    .p-btn-filled:hover { background: var(--deep); transform: translateY(-1px); }
+    .p-btn-outline { border: 2px solid var(--border); color: var(--muted); }
+    .p-btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ─── SOCIAL PROOF ─── */
+    .social {
+      padding: 80px 6%;
+      text-align: center;
+    }
+    .stats-row {
+      display: flex; gap: 48px; justify-content: center; flex-wrap: wrap;
+      max-width: 700px; margin: 0 auto 64px;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Lora', serif;
+      font-size: 2.6rem; font-weight: 700; color: var(--teal); display: block; line-height: 1;
+    }
+    .stat-lbl { font-size: .8rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; margin-top: 6px; }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      max-width: 900px; margin: 0 auto;
+    }
+    .testi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 24px;
+      text-align: left;
+      transition: transform .2s;
+    }
+    .testi-card:hover { transform: translateY(-3px); }
+    .stars { color: #fbbf24; font-size: .9rem; margin-bottom: 12px; }
+    .testi-card p { font-size: .88rem; color: var(--ink); line-height: 1.65; margin-bottom: 16px; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; color: #fff;
+      background: linear-gradient(135deg, var(--mint), var(--teal));
+      flex-shrink: 0;
+    }
+    .testi-name { font-size: .85rem; font-weight: 700; color: var(--ink); }
+    .testi-role { font-size: .75rem; color: var(--muted); }
+
+    /* ─── CTA SECTION ─── */
+    .cta-section {
+      padding: 100px 6%;
+      text-align: center;
+      background: var(--ink);
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% -20%, rgba(62,207,142,.2), transparent 60%);
+    }
+    .cta-section .section-label { background: rgba(255,255,255,.08); color: #6ee7b7; border: 1px solid rgba(255,255,255,.1); }
+    .cta-section .section-title { color: #fff; }
+    .cta-section .section-sub { color: rgba(255,255,255,.55); margin: 0 auto 40px; }
+    .cta-section .btn-primary { background: var(--mint); color: var(--ink); }
+    .cta-section .btn-primary:hover { background: #fff; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: #0a1f1b;
+      padding: 48px 6%;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px;
+    }
+    footer .logo { color: #6ee7b7; }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { text-decoration: none; color: rgba(255,255,255,.4); font-size: .85rem; transition: color .2s; }
+    .footer-links a:hover { color: #6ee7b7; }
+    footer p { color: rgba(255,255,255,.25); font-size: .8rem; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+      .streak-section { grid-template-columns: 1fr; gap: 40px; }
+      .p-card.popular { transform: none; }
+      .stats-row { gap: 32px; }
+    }
+
+    /* ─── SCROLL REVEAL ─── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="logo"><img src="logo.svg" width="28" height="28" style="border-radius:8px" alt="HabitFlow" /><span>HabitFlow</span></a>
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+    </ul>
+    <a href="habitflow-auth.html" class="nav-cta">Start Free →</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="hero-badge"><span></span> Used by 10,000+ habit builders in India</div>
+
+    <h1>Build habits that<br><em>actually stick</em></h1>
+    <p>Track your daily habits with satisfying streaks, beautiful progress charts, and rewards that keep you coming back — every single day.</p>
+
+    <div class="hero-btns">
+      <a href="habitflow-auth.html" class="btn-primary">Start for Free — No card needed</a>
+      <a href="#features" class="btn-ghost">See how it works</a>
+    </div>
+
+    <div class="hero-card">
+      <div class="card-label">📅 Today's Habits — Day 23 Streak 🔥</div>
+      <div class="habit-list">
+        <div class="habit-row">
+          <span class="habit-icon">🧘</span>
+          <span class="habit-name">Morning Meditation</span>
+          <span class="streak-pill">🔥 23</span>
+          <div class="check-circle">✓</div>
+        </div>
+        <div class="habit-row">
+          <span class="habit-icon">📚</span>
+          <span class="habit-name">Read 20 Pages</span>
+          <span class="streak-pill">🔥 15</span>
+          <div class="check-circle">✓</div>
+        </div>
+        <div class="habit-row">
+          <span class="habit-icon">💧</span>
+          <span class="habit-name">Drink 8 Glasses</span>
+          <span class="streak-pill">🔥 8</span>
+          <div class="check-empty"></div>
+        </div>
+        <div class="habit-row">
+          <span class="habit-icon">🏃</span>
+          <span class="habit-name">Evening Walk</span>
+          <span class="streak-pill">🔥 31</span>
+          <div class="check-circle">✓</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="features-header reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need to<br>build lasting habits</h2>
+      <p class="section-sub">No bloat, no confusion. Just the tools that actually help you stay consistent every day.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon">🔥</div>
+        <h3>Satisfying Streak Counters</h3>
+        <p>Watch your streak grow day by day. Breaking it feels genuinely bad — which is exactly the point. Powered by feel-good micro-animations.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🏅</div>
+        <h3>Milestone Badges & Rewards</h3>
+        <p>Hit 7 days? Badge unlocked. Hit 30 days? Special celebration. Rewards at every milestone keep motivation high even when it feels hard.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">📊</div>
+        <h3>Weekly & Monthly Analytics</h3>
+        <p>Beautiful heatmap calendar, completion rates, best streaks, and insights into your best and worst performing habits.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🔔</div>
+        <h3>Smart Push Reminders</h3>
+        <p>Set the exact time you want to be reminded. Gentle, timely nudges — not spammy notifications — straight to your browser.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🎨</div>
+        <h3>5 Beautiful Themes</h3>
+        <p>Switch between Forest Green, Ocean Blue, Sunset Orange, Midnight Dark, and Cloud White. Your tracker, your aesthetic.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">📤</div>
+        <h3>Share Your Streak Card</h3>
+        <p>Generate a beautiful shareable card of your progress. Post it on Instagram, WhatsApp, or LinkedIn. Brag a little — you earned it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STREAK SHOWCASE -->
+  <section style="padding: 0 0 100px; overflow:hidden;">
+    <div class="streak-section">
+      <div class="streak-visual reveal">
+        <div class="week-label">🔥 Your habit heatmap — last 4 weeks</div>
+        <div class="heat-grid" id="heatGrid"></div>
+        <div class="streak-badge-row">
+          <div class="s-badge"><span class="num">23</span><span class="lbl">Day Streak</span></div>
+          <div class="s-badge"><span class="num">87%</span><span class="lbl">Completion</span></div>
+          <div class="s-badge"><span class="num">4</span><span class="lbl">Active Habits</span></div>
+        </div>
+      </div>
+      <div class="streak-text reveal">
+        <div class="section-label">Why HabitFlow works</div>
+        <h2 class="section-title">Your brain loves<br>a visible streak</h2>
+        <p class="section-sub">HabitFlow is built around one insight: when progress is visual and satisfying, you actually show up tomorrow.</p>
+        <ul>
+          <li><div class="bullet-dot">✦</div><span>Every check-in triggers a small celebration animation — instant dopamine hit that reinforces the habit.</span></li>
+          <li><div class="bullet-dot">✦</div><span>The heatmap makes "empty squares" uncomfortable. You'll check in just to fill one in.</span></li>
+          <li><div class="bullet-dot">✦</div><span>Badges at 7, 21, 30, 60, and 100 days create natural milestones to look forward to.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="pricing-header reveal">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">Simple, honest pricing</h2>
+      <p class="section-sub">Start free forever. Upgrade when you're ready for the full experience. No hidden charges.</p>
+    </div>
+
+    <div class="pricing-cards">
+      <!-- FREE -->
+      <div class="p-card reveal">
+        <div class="p-plan">Free</div>
+        <div class="p-price"><sup>₹</sup>0<sub>/mo</sub></div>
+        <div class="p-save">&nbsp;</div>
+        <div class="p-divider"></div>
+        <ul class="p-features">
+          <li><span class="tick">✓</span> Up to 3 habits</li>
+          <li><span class="tick">✓</span> Basic streak counter</li>
+          <li><span class="tick">✓</span> 1 daily reminder</li>
+          <li class="muted-feat"><span class="cross">✕</span> Analytics & heatmap</li>
+          <li class="muted-feat"><span class="cross">✕</span> No ads</li>
+          <li class="muted-feat"><span class="cross">✕</span> Custom themes</li>
+        </ul>
+        <a href="habitflow-auth.html" class="p-btn p-btn-outline">Get Started Free</a>
+      </div>
+
+      <!-- PRO MONTHLY -->
+      <div class="p-card popular reveal">
+        <div class="popular-badge">⚡ Most Popular</div>
+        <div class="p-plan">Pro Monthly</div>
+        <div class="p-price"><sup>₹</sup>99<sub>/mo</sub></div>
+        <div class="p-save">₹99/month — cancel anytime</div>
+        <div class="p-divider"></div>
+        <ul class="p-features">
+          <li><span class="tick">✓</span> Unlimited habits</li>
+          <li><span class="tick">✓</span> Full streak system + badges</li>
+          <li><span class="tick">✓</span> Unlimited reminders</li>
+          <li><span class="tick">✓</span> Analytics & heatmap calendar</li>
+          <li><span class="tick">✓</span> Zero ads, always</li>
+          <li><span class="tick">✓</span> 5 custom themes</li>
+        </ul>
+        <a href="habitflow-auth.html" class="p-btn p-btn-filled">Start 7-Day Free Trial</a>
+      </div>
+
+      <!-- PRO ANNUAL -->
+      <div class="p-card reveal">
+        <div class="p-plan">Pro Annual</div>
+        <div class="p-price"><sup>₹</sup>799<sub>/yr</sub></div>
+        <div class="p-save" style="color: var(--teal);">Save 32% — just ₹67/month</div>
+        <div class="p-divider"></div>
+        <ul class="p-features">
+          <li><span class="tick">✓</span> Everything in Pro Monthly</li>
+          <li><span class="tick">✓</span> Shareable streak card</li>
+          <li><span class="tick">✓</span> CSV & PDF export</li>
+          <li><span class="tick">✓</span> Early access to new features</li>
+          <li><span class="tick">✓</span> Priority support</li>
+          <li><span class="tick">✓</span> Best value in India 🇮🇳</li>
+        </ul>
+        <a href="habitflow-auth.html" class="p-btn p-btn-filled" style="background: var(--deep);">Get Annual Deal</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section class="social" id="testimonials">
+    <div class="reveal">
+      <div class="section-label">Loved by users</div>
+      <h2 class="section-title">Real people, real streaks</h2>
+    </div>
+
+    <div class="stats-row reveal" style="margin-top: 40px;">
+      <div class="stat-item">
+        <span class="stat-num" id="cnt1">0</span>
+        <div class="stat-lbl">Active Users</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="cnt2">0</span>
+        <div class="stat-lbl">Habits Tracked</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="cnt3">0</span>
+        <div class="stat-lbl">Avg. Streak (days)</div>
+      </div>
+    </div>
+
+    <div class="testimonials reveal">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p>"I've tried Habitica, Streaks, everything. HabitFlow is the first one that actually kept me coming back. The animations when you check in are genuinely satisfying."</p>
+        <div class="testi-author">
+          <div class="avatar">RK</div>
+          <div><div class="testi-name">Riya Kapoor</div><div class="testi-role">Freelance Designer, Bangalore</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p>"₹99/month is nothing compared to the value. I've built a 45-day morning routine streak. This app is genuinely responsible for changing my mornings."</p>
+        <div class="testi-author">
+          <div class="avatar">AM</div>
+          <div><div class="testi-name">Arjun Mehta</div><div class="testi-role">CA Student, Delhi</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p>"Maine pehle soch bhi nahi tha ki koi app mujhe 30 din tak consistent rakh sakta hai. HabitFlow ka heatmap dekh ke hi motivation aa jaata hai."</p>
+        <div class="testi-author">
+          <div class="avatar">PS</div>
+          <div><div class="testi-name">Priya Sharma</div><div class="testi-role">MBA Student, Pune</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="section-label reveal">Get started today</div>
+    <h2 class="section-title reveal" style="color:#fff; margin-bottom:16px;">Your 30-day streak<br>starts right now.</h2>
+    <p class="section-sub reveal">Free forever. No credit card. Cancel anytime. Start building the life you actually want.</p>
+    <div class="hero-btns reveal">
+      <a href="habitflow-auth.html" class="btn-primary">Create Free Account →</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="#" class="logo"><img src="logo.svg" width="28" height="28" style="border-radius:8px" alt="HabitFlow" /><span>HabitFlow</span></a>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="habitflow-support.html">Contact Us</a>
+      <a href="mailto:habitflowapp@gmail.com">habitflowapp@gmail.com</a>
+      <a href="#">Blog</a>
+    </div>
+    <p>© 2025 HabitFlow · Made with 💚 in India</p>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // Generate heatmap
+    const grid = document.getElementById('heatGrid');
+    const levels = [0,1,2,3,4];
+    const weights = [0.15, 0.1, 0.2, 0.25, 0.3];
+    for (let i = 0; i < 28; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('heat-cell');
+      const rand = Math.random();
+      let cumul = 0, lvl = 0;
+      for (let l = 0; l < weights.length; l++) {
+        cumul += weights[l];
+        if (rand < cumul) { lvl = levels[l]; break; }
+      }
+      // last 3 cells always filled (recent activity)
+      if (i >= 25) lvl = Math.floor(Math.random() * 2) + 3;
+      cell.classList.add('h' + lvl);
+      cell.title = lvl === 0 ? 'No activity' : `Level ${lvl} activity`;
+      grid.appendChild(cell);
+    }
+
+    // Counter animation
+    function animateCounter(el, target, suffix = '') {
+      let current = 0;
+      const step = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current).toLocaleString('en-IN') + suffix;
+        if (current >= target) clearInterval(timer);
+      }, 25);
+    }
+
+    const statsObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          animateCounter(document.getElementById('cnt1'), 10000, '+');
+          animateCounter(document.getElementById('cnt2'), 250000, '+');
+          animateCounter(document.getElementById('cnt3'), 18);
+          statsObs.disconnect();
+        }
+      });
+    }, { threshold: 0.5 });
+    statsObs.observe(document.getElementById('cnt1'));
+  </script>
+</body>
+</html>

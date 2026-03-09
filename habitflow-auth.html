@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitFlow — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --mint:   #3ecf8e;
+      --teal:   #0d9488;
+      --deep:   #0a6b61;
+      --leaf:   #d1fae5;
+      --cream:  #f0fdf4;
+      --ink:    #0f2d25;
+      --muted:  #4b7c70;
+      --border: #a7f3d0;
+      --shadow: rgba(14,109,97,.12);
+      --error:  #ef4444;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .blob {
+      position: fixed; border-radius: 50%;
+      filter: blur(80px); opacity: .2; pointer-events: none;
+    }
+    .blob-1 { width: 500px; height: 500px; background: var(--mint); top: -150px; left: -150px; animation: drift 12s ease-in-out infinite alternate; }
+    .blob-2 { width: 350px; height: 350px; background: var(--teal); bottom: -100px; right: -100px; animation: drift 9s ease-in-out infinite alternate-reverse; }
+    @keyframes drift { from { transform: translate(0,0); } to { transform: translate(25px,18px); } }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 44px 40px;
+      width: 100%; max-width: 440px;
+      box-shadow: 0 24px 80px var(--shadow);
+      position: relative; z-index: 1;
+      animation: fadeUp .6s ease both;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+    .logo {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem; font-weight: 700;
+      color: var(--deep);
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 28px; text-decoration: none;
+    }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mint); }
+
+    .tabs {
+      display: flex; background: var(--cream);
+      border-radius: 14px; padding: 4px;
+      margin-bottom: 30px;
+    }
+    .tab {
+      flex: 1; padding: 10px;
+      border: none; background: transparent;
+      border-radius: 11px; font-family: inherit;
+      font-size: .9rem; font-weight: 600;
+      color: var(--muted); cursor: pointer;
+      transition: all .2s;
+    }
+    .tab.active { background: #fff; color: var(--teal); box-shadow: 0 2px 8px var(--shadow); }
+
+    .form-title { font-family: 'Lora', serif; font-size: 1.5rem; color: var(--ink); margin-bottom: 6px; }
+    .form-sub { font-size: .85rem; color: var(--muted); margin-bottom: 26px; }
+
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: .82rem; font-weight: 700; color: var(--ink); margin-bottom: 7px; letter-spacing: .02em; }
+    .field input {
+      width: 100%; padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-family: inherit; font-size: .92rem; color: var(--ink);
+      background: var(--cream);
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,.12); background: #fff; }
+    .field input::placeholder { color: #9ca3af; }
+
+    .forgot { display: block; text-align: right; font-size: .8rem; color: var(--teal); text-decoration: none; margin-top: -10px; margin-bottom: 18px; font-weight: 600; }
+    .forgot:hover { text-decoration: underline; }
+
+    .btn-main {
+      width: 100%; padding: 14px;
+      background: var(--teal); color: #fff;
+      border: none; border-radius: 50px;
+      font-family: inherit; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background .2s, transform .15s;
+      box-shadow: 0 4px 16px rgba(13,148,136,.3);
+      margin-bottom: 16px;
+    }
+    .btn-main:hover { background: var(--deep); transform: translateY(-1px); }
+    .btn-main:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: .8rem; margin-bottom: 16px;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .btn-google {
+      width: 100%; padding: 13px;
+      background: #fff; color: var(--ink);
+      border: 1.5px solid var(--border); border-radius: 50px;
+      font-family: inherit; font-size: .92rem; font-weight: 600;
+      cursor: pointer; transition: border-color .2s, box-shadow .2s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-google:hover { border-color: var(--teal); box-shadow: 0 4px 14px var(--shadow); }
+    .google-icon { width: 18px; height: 18px; }
+
+    .msg {
+      padding: 11px 14px; border-radius: 10px;
+      font-size: .84rem; font-weight: 500;
+      margin-bottom: 16px; display: none;
+    }
+    .msg.error { background: #fef2f2; color: var(--error); border: 1px solid #fecaca; display: block; }
+    .msg.success { background: var(--leaf); color: var(--deep); border: 1px solid var(--border); display: block; }
+
+    .footer-note { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 20px; }
+    .footer-note a { color: var(--teal); text-decoration: none; font-weight: 600; }
+
+    /* Password strength */
+    .strength-bar { height: 4px; border-radius: 2px; background: var(--border); margin-top: 8px; overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 2px; width: 0%; transition: width .3s, background .3s; }
+
+    /* Loading spinner */
+    .spinner {
+      width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .6s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Panel switching */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Success screen */
+    .success-screen {
+      text-align: center; padding: 20px 0;
+    }
+    .success-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--leaf);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 20px;
+      animation: pop .4s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+    .success-screen h2 { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--ink); margin-bottom: 10px; }
+    .success-screen p { color: var(--muted); font-size: .9rem; line-height: 1.6; }
+  </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="card">
+    <a href="habitflow-landing.html" class="logo"><img src="logo.svg" width="26" height="26" style="border-radius:7px" alt="" /><span>HabitFlow</span></a>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="panel active" id="panel-login">
+      <h2 class="form-title">Welcome back 👋</h2>
+      <p class="form-sub">Sign in to continue your streak</p>
+
+      <div class="msg" id="login-msg"></div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password" />
+      </div>
+      <a href="#" class="forgot" onclick="switchTab('reset'); return false;">Forgot password?</a>
+
+      <button class="btn-main" id="login-btn" onclick="handleLogin()">Sign In</button>
+
+      <div class="divider">or continue with</div>
+
+      <button class="btn-google" onclick="handleGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <p class="footer-note">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Sign up free</a></p>
+    </div>
+
+    <!-- SIGNUP PANEL -->
+    <div class="panel" id="panel-signup">
+      <h2 class="form-title">Start your journey 🌱</h2>
+      <p class="form-sub">Create your free account — no card needed</p>
+
+      <div class="msg" id="signup-msg"></div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="signup-name" placeholder="Ayush Kumar" />
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Min 8 characters" oninput="checkStrength(this.value)" />
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+      </div>
+
+      <button class="btn-main" id="signup-btn" onclick="handleSignup()">Create Free Account</button>
+
+      <div class="divider">or continue with</div>
+
+      <button class="btn-google" onclick="handleGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <p class="footer-note">Already have an account? <a href="#" onclick="switchTab('login'); return false;">Sign in</a></p>
+    </div>
+
+    <!-- RESET PANEL -->
+    <div class="panel" id="panel-reset">
+      <h2 class="form-title">Reset password 🔑</h2>
+      <p class="form-sub">We'll send a reset link to your email</p>
+
+      <div class="msg" id="reset-msg"></div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="reset-email" placeholder="you@example.com" />
+      </div>
+
+      <button class="btn-main" onclick="handleReset()">Send Reset Link</button>
+      <p class="footer-note"><a href="#" onclick="switchTab('login'); return false;">← Back to Sign In</a></p>
+    </div>
+
+    <!-- SUCCESS PANEL -->
+    <div class="panel" id="panel-success">
+      <div class="success-screen">
+        <div class="success-icon">✅</div>
+        <h2>Check your email!</h2>
+        <p>We've sent a confirmation link to your email. Click it to activate your account and start your first streak.</p>
+        <br>
+        <button class="btn-main" onclick="switchTab('login')" style="max-width:220px; margin: 0 auto;">Back to Sign In</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      const idx = ['login','signup'].indexOf(tab);
+      if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+    }
+
+    function showMsg(id, text, type = 'error') {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'msg ' + type;
+    }
+
+    function setLoading(btnId, loading, defaultText) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.innerHTML = loading ? `<span class="spinner"></span> Please wait...` : defaultText;
+    }
+
+    function checkStrength(val) {
+      const fill = document.getElementById('strength-fill');
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const pct = (score / 4) * 100;
+      const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+      fill.style.width = pct + '%';
+      fill.style.background = colors[Math.max(score-1,0)];
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) return showMsg('login-msg', 'Please fill in all fields.');
+      setLoading('login-btn', true, 'Sign In');
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      setLoading('login-btn', false, 'Sign In');
+      if (error) return showMsg('login-msg', error.message);
+      showMsg('login-msg', '✅ Signed in! Redirecting to your dashboard...', 'success');
+      setTimeout(() => { window.location.href = 'habitflow-dashboard.html'; }, 1200);
+    }
+
+    async function handleSignup() {
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      if (!name || !email || !password) return showMsg('signup-msg', 'Please fill in all fields.');
+      if (password.length < 8) return showMsg('signup-msg', 'Password must be at least 8 characters.');
+      setLoading('signup-btn', true, 'Create Free Account');
+      const { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
+      setLoading('signup-btn', false, 'Create Free Account');
+      if (error) return showMsg('signup-msg', error.message);
+      switchTab('success');
+    }
+
+    async function handleReset() {
+      const email = document.getElementById('reset-email').value.trim();
+      if (!email) return showMsg('reset-msg', 'Please enter your email.');
+      const { error } = await sb.auth.resetPasswordForEmail(email);
+      if (error) return showMsg('reset-msg', error.message);
+      showMsg('reset-msg', '✅ Reset link sent! Check your inbox.', 'success');
+    }
+
+    async function handleGoogle() {
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/habitflow-dashboard.html' }
+      });
+      if (error) alert(error.message);
+    }
+
+    // Check if already logged in
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = 'habitflow-dashboard.html';
+    });
+  </script>
+</body>
+</html>
