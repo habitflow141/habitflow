@@ -262,7 +262,7 @@
     <div class="s-desc">Have an issue or need a refund? We're here to help.</div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
       <a href="habitflow-support.html" class="save-btn" style="text-decoration:none;display:inline-block">Contact Support →</a>
-      <a href="mailto:habitflowapp@gmail.com" style="font-size:.84rem;color:var(--teal);font-weight:600;">habitflowapp@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#3850595a514c5e54574f594848785f55595154165b5755" style="font-size:.84rem;color:var(--teal);font-weight:600;"><span class="__cf_email__" data-cfemail="6f070e0d061b090300180e1f1f2f08020e0603410c0002">[email&#160;protected]</span></a>
     </div>
   </div>
 
@@ -280,7 +280,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
   const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
   const { createClient } = supabase;
@@ -354,15 +354,4 @@
   async function handleLogout() { await sb.auth.signOut(); window.location.href = 'habitflow-auth.html'; }
 
   function showToast(msg) {
-    const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-  }
-
-  // Apply saved theme on load
-  const saved = localStorage.getItem('hf-theme');
-  if (saved) document.body.setAttribute('data-theme', saved);
-
-  init();
-</script>
-</body>
-</html>
+    const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('
