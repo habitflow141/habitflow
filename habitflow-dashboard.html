@@ -364,9 +364,7 @@
   const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
 
   const { createClient } = supabase;
-  const sb = createClient(SB_URL, SB_KEY, {
-    auth: { persistSession: true, storageKey: 'habitflow-auth', storage: window.localStorage }
-  });
+  const sb = createClient(SB_URL, SB_KEY);
   let messaging;
   try {
     const app = initializeApp(FB);
@@ -380,17 +378,7 @@
 
   async function init() {
     let { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      // Wait for Supabase to restore session from storage
-      session = await new Promise(resolve => {
-        const { data: { subscription } } = sb.auth.onAuthStateChange((_event, s) => {
-          subscription.unsubscribe();
-          resolve(s);
-        });
-        setTimeout(() => resolve(null), 3000);
-      });
-    }
-    if (!session) { window.location.href = 'habitflow-auth.html'; return; }
+    if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
     document.getElementById('nav-name').textContent = name;
@@ -626,7 +614,7 @@
 
   // ── UTILS ──
   function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
-  window.handleLogout=async()=>{ await sb.auth.signOut(); window.location.href='habitflow-auth.html'; };
+  window.handleLogout=async()=>{ await sb.auth.signOut(); window.location.replace(window.location.origin + '/habitflow-auth.html'); };
   document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) window.addHabit(); if(e.key==='Escape') window.closeModal(); });
 
   function toggleSidebar() {

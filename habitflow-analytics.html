@@ -319,26 +319,14 @@
   const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
   const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
   const { createClient } = supabase;
-  const sb = createClient(SB_URL, SB_KEY, {
-    auth: { persistSession: true, storageKey: 'habitflow-auth', storage: window.localStorage }
-  });
+  const sb = createClient(SB_URL, SB_KEY);
 
   let currentUser = null, habits = [], allLogs = [];
   const today = new Date().toISOString().split('T')[0];
 
   async function init() {
     let { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      // Wait for Supabase to restore session from storage
-      session = await new Promise(resolve => {
-        const { data: { subscription } } = sb.auth.onAuthStateChange((_event, s) => {
-          subscription.unsubscribe();
-          resolve(s);
-        });
-        setTimeout(() => resolve(null), 3000);
-      });
-    }
-    if (!session) { window.location.href = 'habitflow-auth.html'; return; }
+    if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
     document.getElementById('nav-name').textContent = name;

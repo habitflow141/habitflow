@@ -294,16 +294,14 @@
     const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
     const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
     const { createClient } = supabase;
-    const sb = createClient(SB_URL, SB_KEY, {
-    auth: { persistSession: true, storageKey: 'habitflow-auth', storage: window.localStorage }
-  });
+    const sb = createClient(SB_URL, SB_KEY);
 
     let currentUser = null;
     let isAnnual = false;
 
     async function init() {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { window.location.href = 'habitflow-auth.html'; return; }
+      if (!session) { window.location.replace(window.location.origin + '/habitflow-auth.html'); return; }
       currentUser = session.user;
 
       // Check current plan

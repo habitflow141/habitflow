@@ -346,9 +346,20 @@
       if (error) alert(error.message);
     }
 
-    // Check if already logged in
+    // Check if already logged in — use full URL to avoid redirect issues
     sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = 'habitflow-dashboard.html';
+      if (session) {
+        const base = window.location.origin;
+        window.location.replace(base + '/habitflow-dashboard.html');
+      }
+    });
+
+    // Also listen for auth state changes (handles OAuth redirects)
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const base = window.location.origin;
+        window.location.replace(base + '/habitflow-dashboard.html');
+      }
     });
   </script>
 </body>
