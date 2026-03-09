@@ -120,10 +120,11 @@
     .heatmap-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
     .month-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
     .heatmap-wrap { overflow-x: auto; }
-    .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-    .day-label-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 8px; }
+    .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .day-label-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 8px; }
+    .heatmap-inner { width: 100%; max-width: 420px; }
     .day-lbl { font-size: .68rem; font-weight: 700; color: var(--muted); text-align: center; text-transform: uppercase; }
-    .heat-cell { height: 26px; border-radius: 4px; cursor: pointer; transition: transform .12s; }
+    .heat-cell { aspect-ratio: 1 / 1; width: 100%; border-radius: 6px; cursor: pointer; transition: transform .12s; }
     .heat-cell:hover { transform: scale(1.15); z-index: 2; position: relative; }
     .heat-future { background: #e2e8e4 !important; cursor: default; }
     .heat-empty  { background: #d4ede3 !important; opacity: 0.5; pointer-events: none; }
@@ -303,7 +304,7 @@
   <!-- HEATMAP -->
   <div class="heatmap-card">
     <div class="section-title">Activity Heatmap <span id="heatmap-subtitle">Since you joined</span></div>
-    <div class="heatmap-grid" id="heatmap-grid"><div class="loading"><div class="spinner"></div></div></div>
+    <div class="heatmap-inner"><div class="day-label-row" id="heatmap-labels"></div><div class="heatmap-grid" id="heatmap-grid"><div class="loading"><div class="spinner"></div></div></div></div>
     <div class="heatmap-legend">
       <span>Less</span>
       <div class="legend-cell h0"></div>
@@ -487,13 +488,7 @@
 
     // ── day labels ────────────────────────────────────────────────────────────
     const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    let labelRow = grid.previousElementSibling;
-    if (!labelRow || !labelRow.classList.contains('day-label-row')) {
-      labelRow = document.createElement('div');
-      labelRow.className = 'day-label-row';
-      grid.parentNode.insertBefore(labelRow, grid);
-    }
-    labelRow.innerHTML = dayNames.map(d => `<div class="day-lbl">${d}</div>`).join('');
+    document.getElementById('heatmap-labels').innerHTML = dayNames.map(d => `<div class="day-lbl">${d}</div>`).join('');
 
     // ── render cells ─────────────────────────────────────────────────────────
     const max = habits.length || 1;
