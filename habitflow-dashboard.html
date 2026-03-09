@@ -175,11 +175,64 @@
     .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin .6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 900px) { .main { margin-left: 0; padding: 20px 18px; } .stats-row { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 900px) { .main { margin-left: 0; padding: 16px; } .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+    /* MOBILE NAV */
+    .mobile-topbar { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: var(--ink); padding: 14px 18px; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .mobile-logo { font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .hamburger { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all .3s; }
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
+
+    /* BOTTOM NAV for mobile */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--ink); border-top: 1px solid rgba(255,255,255,.08); padding: 8px 0 12px; }
+    .bottom-nav-items { display: flex; justify-content: space-around; align-items: center; }
+    .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: rgba(255,255,255,.45); font-size: .62rem; font-weight: 600; padding: 4px 12px; border-radius: 10px; transition: color .2s; cursor: pointer; background: none; border: none; font-family: inherit; }
+    .bnav-item.active { color: var(--mint); }
+    .bnav-item .bnav-icon { font-size: 1.2rem; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform .3s ease; z-index: 150; }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay { display: block; opacity: 0; pointer-events: none; transition: opacity .3s; }
+      .sidebar-overlay.open { opacity: 1; pointer-events: all; }
+      .mobile-topbar { display: flex; }
+      .bottom-nav { display: block; }
+      .main { padding-top: 70px !important; padding-bottom: 80px !important; margin-left: 0 !important; }
+      .stats-row { grid-template-columns: repeat(2,1fr); gap: 10px; }
+      .greeting h1 { font-size: 1.4rem; }
+      .habit-card { padding: 16px; }
+    }
   </style>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 </head>
 <body>
+
+<!-- MOBILE TOPBAR -->
+<div class="mobile-topbar">
+  <a href="habitflow-landing.html" class="mobile-logo">
+    <img src="logo.svg" width="24" height="24" style="border-radius:6px" alt="" />
+    HabitFlow
+  </a>
+  <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bnav-item active" onclick="showView('today');closeSidebar()"><span class="bnav-icon">🏠</span>Today</button>
+    <button class="bnav-item" onclick="showView('reminders');closeSidebar()"><span class="bnav-icon">🔔</span>Reminders</button>
+    <button class="bnav-item" onclick="showView('habits');closeSidebar()"><span class="bnav-icon">📋</span>Habits</button>
+    <a class="bnav-item" href="habitflow-analytics.html"><span class="bnav-icon">📊</span>Analytics</a>
+    <a class="bnav-item" href="habitflow-settings.html"><span class="bnav-icon">⚙️</span>Settings</a>
+  </div>
+</nav>
 
 <aside class="sidebar">
   <a href="habitflow-landing.html" class="logo"><img src="logo.svg" width="26" height="26" style="border-radius:7px" alt="" /><span>HabitFlow</span></a>
@@ -563,6 +616,17 @@
   function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
   window.handleLogout=async()=>{ await sb.auth.signOut(); window.location.href='habitflow-auth.html'; };
   document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('modal-overlay').classList.contains('open')) window.addHabit(); if(e.key==='Escape') window.closeModal(); });
+
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('sidebar-overlay').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
+  }
+  function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+  }
 
   init();
 </script>
