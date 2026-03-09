@@ -294,7 +294,9 @@
     const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
     const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
     const { createClient } = supabase;
-    const sb = createClient(SB_URL, SB_KEY);
+    const sb = createClient(SB_URL, SB_KEY, {
+    auth: { persistSession: true, storageKey: 'habitflow-auth', storage: window.localStorage }
+  });
 
     let currentUser = null;
     let isAnnual = false;

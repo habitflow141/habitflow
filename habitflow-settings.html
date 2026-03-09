@@ -320,11 +320,18 @@
   const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
   const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
   const { createClient } = supabase;
-  const sb = createClient(SB_URL, SB_KEY);
+  const sb = createClient(SB_URL, SB_KEY, {
+    auth: { persistSession: true, storageKey: 'habitflow-auth', storage: window.localStorage }
+  });
   let currentUser = null;
 
   async function init() {
-    const { data: { session } } = await sb.auth.getSession();
+    let { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const retry = await sb.auth.getSession();
+      session = retry.data.session;
+    }
     if (!session) { window.location.href = 'habitflow-auth.html'; return; }
     currentUser = session.user;
 
