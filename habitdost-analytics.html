@@ -449,20 +449,39 @@
     const logMap = {};
     allLogs.forEach(l => { logMap[l.completed_date] = (logMap[l.completed_date] || 0) + 1; });
 
-    // Generate last 28 days starting from Monday
+    // Generate last 28 days — align grid to start from Monday
     const days = [];
     for (let i = 27; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
       days.push(d.toISOString().split('T')[0]);
     }
 
+    // Find what day of week the first day is (0=Sun,1=Mon,...6=Sat)
+    // We want Monday as column 0, so pad with empty cells if needed
+    const firstDay = new Date(days[0]);
+    // getDay(): 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    // Convert to Mon-based: Mon=0, Tue=1, ..., Sun=6
+    const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
+
     const max = habits.length || 1;
-    grid.innerHTML = days.map(date => {
+    
+    // Add day labels row (Mon-Sun)
+    const dayLabels = ['M','T','W','T','F','S','S'];
+    const labelsHTML = dayLabels.map(d => `<div style="text-align:center;font-size:.65rem;font-weight:700;color:var(--muted);padding-bottom:4px">${d}</div>`).join('');
+    
+    // Add empty padding cells for alignment
+    const paddingCells = Array(firstDayOfWeek).fill('<div class="heat-cell" style="opacity:0;pointer-events:none"></div>').join('');
+    
+    const cellsHTML = days.map(date => {
       const count = logMap[date] || 0;
       const lvl = count === 0 ? 0 : count >= max ? 4 : count >= max * .75 ? 3 : count >= max * .5 ? 2 : 1;
       const isToday = date === today;
-      return `<div class="heat-cell h${lvl}" title="${date}: ${count} habit${count !== 1 ? 's' : ''} completed" style="${isToday ? 'outline:2px solid var(--teal);outline-offset:1px' : ''}"></div>`;
+      const d = new Date(date);
+      const label = d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+      return `<div class="heat-cell h${lvl}" title="${label}: ${count} habit${count !== 1 ? 's' : ''} completed" style="${isToday ? 'outline:2px solid var(--teal);outline-offset:1px' : ''}"></div>`;
     }).join('');
+
+    grid.innerHTML = labelsHTML + paddingCells + cellsHTML;
   }
 
   function renderMonthlyChart() {
