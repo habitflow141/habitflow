@@ -619,6 +619,18 @@
 
   function habitCardHTML(h, showCheckin = true) {
     const done = todayLogs.has(h.id);
+    // Rest day active — show 😴 state instead of check-in
+    if (showCheckin && isRestDay && !done) {
+      return `
+        <div class="habit-card" id="hcard-${h.id}" style="opacity:.8;">
+          <div class="habit-emoji">${h.icon}</div>
+          <div class="habit-info"><h3>${h.name}</h3><p>😴 Rest day — streak is safe</p></div>
+          ${h.reminder_time?`<div class="reminder-chip">⏰ ${h.reminder_time.substring(0,5)}</div>`:''}
+          <div class="streak-badge">🔥 ${h.current_streak||0}</div>
+          <button class="check-btn" style="font-size:1rem;border:2px solid var(--teal);background:var(--leaf);" disabled>😴</button>
+          <button class="delete-btn" onclick="deleteHabit(event,'${h.id}')">🗑</button>
+        </div>`;
+    }
     return `
       <div class="habit-card ${done&&showCheckin?'done':''}" id="hcard-${h.id}">
         <div class="habit-emoji">${h.icon}</div>
@@ -961,6 +973,7 @@
       isRestDay = false;
       restDaysThisMonth = Math.max(0, restDaysThisMonth - 1);
       renderRestDayCard();
+      renderHabits();
       showToast('Rest day removed ✓');
       return;
     }
@@ -976,6 +989,7 @@
     isRestDay = true;
     restDaysThisMonth++;
     renderRestDayCard();
+    renderHabits();
     showToast('😴 Rest day marked — streak is safe!');
     confetti({ particleCount: 40, spread: 60, origin: { x:.5, y:.5 }, colors:['#3ecf8e','#d1fae5','#fff'] });
   };

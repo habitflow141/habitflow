@@ -341,14 +341,14 @@
   </div>
 
   <!-- MONTHLY CHART -->
-  <div class="monthly-chart">
+  <div class="monthly-chart" id="monthly-section">
     <div class="section-title">Monthly Overview <span id="month-label"></span></div>
     <div class="chart-bars" id="monthly-bars"><div class="loading"><div class="spinner"></div></div></div>
   </div>
 
   <!-- PER HABIT STATS -->
-  <div class="section-title">Per Habit Performance <span>All time</span></div>
-  <div class="habit-bars" id="habit-bars"><div class="loading"><div class="spinner"></div></div></div>
+  <div id="habit-bars-section"><div class="section-title">Per Habit Performance <span>All time</span></div>
+  <div class="habit-bars" id="habit-bars"><div class="loading"><div class="spinner"></div></div></div></div>
 
 </main>
 
@@ -462,11 +462,24 @@
         if (heatmapCard) heatmapCard.insertAdjacentHTML('afterbegin', trialBannerHTML);
       }
 
-      // Always lock monthly chart, habit bars, streak card for free users
-      ['#monthly-section', '#habit-bars-section', '#streak-card-section'].forEach(sel => {
-        const el = document.querySelector(sel);
-        if (el) el.style.display = 'none';
-      });
+      // Replace monthly chart and habit bars with lock message
+      const lockCardHTML = `
+        <div style="text-align:center;padding:36px 20px;background:var(--card);border-radius:18px;">
+          <div style="font-size:2rem;margin-bottom:10px">🔒</div>
+          <h3 style="color:var(--ink);font-size:.95rem;font-weight:800;margin-bottom:6px">Pro Feature</h3>
+          <p style="color:var(--muted);font-size:.82rem;margin-bottom:16px;max-width:280px;margin-left:auto;margin-right:auto;">Upgrade to Pro to unlock Monthly Overview, Per Habit Performance charts and CSV export.</p>
+          <a href="habitdost-upgrade.html" style="display:inline-block;padding:9px 22px;background:var(--teal);color:#fff;border-radius:50px;font-weight:700;font-size:.82rem;text-decoration:none;">Upgrade to Pro ⭐</a>
+        </div>`;
+
+      const monthlyBars = document.getElementById('monthly-bars');
+      if (monthlyBars) monthlyBars.innerHTML = lockCardHTML;
+
+      const habitBarsEl = document.getElementById('habit-bars');
+      if (habitBarsEl) habitBarsEl.innerHTML = lockCardHTML;
+
+      // Hide streak card section
+      const scSec = document.querySelector('#streak-card-section');
+      if (scSec) scSec.style.display = 'none';
 
       // Render stats + heatmap (if trial still active)
       renderStats();
