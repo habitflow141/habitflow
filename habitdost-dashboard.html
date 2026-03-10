@@ -479,7 +479,22 @@
     if (p?.plan) {
       userPlan = p.plan;
       const planEl = document.querySelector('.user-plan');
-      if (planEl) planEl.textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
+      if (planEl) {
+        if (userPlan === 'pro') {
+          planEl.textContent = '✨ Pro Plan';
+        } else {
+          // Calculate trial days left
+          const joinDate = new Date(currentUser.created_at);
+          const nowDate = new Date();
+          const daysSinceJoin = Math.floor((nowDate - joinDate) / (1000 * 60 * 60 * 24));
+          const trialDaysLeft = 7 - daysSinceJoin;
+          if (trialDaysLeft > 0) {
+            planEl.innerHTML = `Free Plan <span style="color:#fbbf24;font-weight:700">· ⏳ ${trialDaysLeft}d left</span>`;
+          } else {
+            planEl.innerHTML = `Free Plan <span style="color:#f87171;font-weight:700">· Trial ended</span>`;
+          }
+        }
+      }
     }
     document.getElementById('nav-name').textContent = name;
     document.getElementById('nav-avatar').textContent = name[0].toUpperCase();

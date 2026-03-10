@@ -393,22 +393,39 @@
         }
         if (p.theme) applyTheme(p.theme, false);
         
-        // 🔒 Lock themes for free users — only Forest allowed
+        // 🎨 Theme trial — free users get 7 days of all themes
         if (plan !== 'pro') {
-          ['ocean','sunset','midnight','cloud'].forEach(t => {
-            const card = document.getElementById('theme-' + t);
-            if (card) {
-              card.style.opacity = '0.4';
-              card.style.cursor = 'not-allowed';
-              card.setAttribute('onclick', "showToast('🔒 Custom themes are a Pro feature — upgrade to unlock!')");
-              // Add lock badge
-              card.innerHTML += '<div style="position:absolute;top:6px;left:8px;font-size:.75rem">🔒</div>';
+          const joinDate = new Date(currentUser.created_at);
+          const now = new Date();
+          const daysSinceJoin = Math.floor((now - joinDate) / (1000 * 60 * 60 * 24));
+          const trialDaysLeft = 7 - daysSinceJoin;
+          const themeTrialOver = daysSinceJoin >= 7;
+
+          const themeGrid = document.querySelector('.themes-grid');
+
+          if (themeTrialOver) {
+            // Day 8+ — lock all non-forest themes
+            ['ocean','sunset','midnight','cloud'].forEach(t => {
+              const card = document.getElementById('theme-' + t);
+              if (card) {
+                card.style.opacity = '0.4';
+                card.style.cursor = 'not-allowed';
+                card.setAttribute('onclick', "window.location.href='habitdost-upgrade.html'");
+                card.innerHTML += '<div style="position:absolute;top:6px;left:8px;font-size:.75rem">🔒</div>';
+              }
+            });
+            if (themeGrid && !document.getElementById('theme-trial-note')) {
+              themeGrid.insertAdjacentHTML('afterend', '<div id="theme-trial-note" style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f0fdf4,#d1fae5);border:1.5px solid var(--teal);border-radius:12px;padding:12px 16px;margin-top:14px;"><span style="font-size:1.2rem">🔒</span><div style="font-size:.82rem;color:var(--muted)">Your free theme trial has ended. <a href="habitdost-upgrade.html" style="color:var(--teal);font-weight:700">Upgrade to Pro</a> to unlock all 5 themes.</div></div>');
             }
-          });
-          // Add upgrade note under themes
-          const themeGrid = document.querySelector('.theme-grid');
-          if (themeGrid && !document.getElementById('theme-upgrade-note')) {
-            themeGrid.insertAdjacentHTML('afterend', '<p id="theme-upgrade-note" style="font-size:.78rem;color:var(--muted);margin-top:10px">🔒 4 custom themes are available on <a href="habitdost-upgrade.html" style="color:var(--accent);font-weight:700">Pro plan</a></p>');
+            // Reset to forest if currently using a locked theme
+            if (p.theme && p.theme !== 'forest') {
+              applyTheme('forest', true);
+            }
+          } else {
+            // Days 1-7 — all themes unlocked, show countdown banner
+            if (themeGrid && !document.getElementById('theme-trial-note')) {
+              themeGrid.insertAdjacentHTML('afterend', '<div id="theme-trial-note" style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f0fdf4,#d1fae5);border:1.5px solid var(--teal);border-radius:12px;padding:12px 16px;margin-top:14px;"><span style="font-size:1.2rem">⏳</span><div><div style="font-size:.82rem;font-weight:700;color:var(--teal)">Free Trial — ' + trialDaysLeft + ' day' + (trialDaysLeft !== 1 ? 's' : '') + ' left</div><div style="font-size:.78rem;color:var(--muted)">Enjoy all themes free! <a href="habitdost-upgrade.html" style="color:var(--teal);font-weight:700">Upgrade to Pro</a> to keep them forever.</div></div></div>');
+            }
           }
         }
       }
@@ -434,8 +451,11 @@
   }
 
   function applyTheme(theme, save = true) {
-    // 🔒 Block non-forest themes for free users
-    if (userPlan !== 'pro' && theme !== 'forest' && save) {
+    // 🔒 Block non-forest themes for free users after trial
+    const _j = new Date(currentUser?.created_at || Date.now());
+    const _days = Math.floor((new Date() - _j) / (1000*60*60*24));
+    const _trialOver = _days >= 7;
+    if (userPlan !== 'pro' && _trialOver && theme !== 'forest' && save) {
       showToast('🔒 Custom themes are a Pro feature — upgrade to unlock!');
       return;
     }
