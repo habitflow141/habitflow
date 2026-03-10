@@ -127,6 +127,7 @@
     .heat-cell { aspect-ratio: 1 / 1; width: 100%; border-radius: 6px; cursor: pointer; transition: transform .12s; }
     .heat-cell:hover { transform: scale(1.15); z-index: 2; position: relative; }
     .heat-future { background: #e2e8e4 !important; cursor: default; }
+    .heat-rest { background: #dbeafe !important; position: relative; display: flex; align-items: center; justify-content: center; font-size: .75rem; }
     .heat-empty  { background: #d4ede3 !important; opacity: 0.5; pointer-events: none; }
     .h0 { background: #c8e6d4; }
     .h1 { background: #6ee7b7; }
@@ -388,7 +389,7 @@
   const { createClient } = supabase;
   const sb = createClient(SB_URL, SB_KEY);
 
-  let currentUser = null, habits = [], allLogs = [];
+  let currentUser = null, habits = [], allLogs = [], restDays = new Set();
   const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
   let today = getToday();
 
@@ -480,9 +481,13 @@
     const { data: h } = await sb.from('habits').select('*').eq('user_id', currentUser.id).eq('is_active', true).order('created_at');
     habits = h || [];
 
-    // Get ALL logs from the beginning (join date)
+    // Get ALL logs from the beginning
     const { data: l } = await sb.from('habit_logs').select('*').eq('user_id', currentUser.id).order('completed_date');
     allLogs = l || [];
+
+    // Get all rest days
+    const { data: rd } = await sb.from('rest_days').select('rest_date').eq('user_id', currentUser.id);
+    restDays = new Set((rd || []).map(r => r.rest_date));
   }
 
   function renderAll() {

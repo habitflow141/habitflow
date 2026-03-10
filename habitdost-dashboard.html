@@ -215,6 +215,19 @@
     .review-skip { background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 50px; padding: 11px 22px; font-size: .88rem; font-weight: 600; cursor: pointer; transition: border .2s; }
     .review-skip:hover { border-color: var(--teal); color: var(--teal); }
 
+    /* REST DAY */
+    .rest-day-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 18px; padding: 18px 20px; margin: 16px 0; display: flex; align-items: center; gap: 14px; }
+    .rest-day-icon { font-size: 2rem; flex-shrink: 0; }
+    .rest-day-info h3 { font-size: .95rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .rest-day-info p { font-size: .78rem; color: var(--muted); }
+    .rest-day-btn { margin-left: auto; flex-shrink: 0; padding: 9px 20px; border-radius: 50px; font-size: .82rem; font-weight: 700; cursor: pointer; border: none; transition: opacity .2s; }
+    .rest-day-btn.activate { background: var(--teal); color: #fff; }
+    .rest-day-btn.activate:hover { opacity: .85; }
+    .rest-day-btn.cancel { background: var(--leaf); color: var(--teal); border: 1.5px solid var(--teal); }
+    .rest-day-btn.cancel:hover { opacity: .8; }
+    .rest-day-btn.locked { background: var(--leaf); color: var(--muted); cursor: not-allowed; }
+    .rest-day-active { background: linear-gradient(135deg, #f0fdf4, #d1fae5); border-color: var(--teal); }
+
     .badge-popup { position: fixed; bottom: 30px; right: 30px; z-index: 300; background: var(--ink); color: #fff; border-radius: 18px; padding: 18px 22px; display: flex; align-items: center; gap: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.3); transform: translateY(120px); opacity: 0; transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s; max-width: 300px; }
     .badge-popup.show { transform: none; opacity: 1; }
     .badge-icon { font-size: 2rem; flex-shrink: 0; }
@@ -347,6 +360,17 @@
     <div class="section-title">Today's Habits <span id="today-date-label"></span></div>
     <div class="habits-grid" id="habits-grid"><div class="loading"><div class="spinner"></div></div></div>
     <button class="add-habit-btn" onclick="openModal()">＋ Add New Habit</button>
+
+    <!-- REST DAY CARD -->
+    <div class="rest-day-card" id="rest-day-card">
+      <div class="rest-day-icon" id="rest-day-emoji">😴</div>
+      <div class="rest-day-info">
+        <h3 id="rest-day-title">Mark Today as Rest Day</h3>
+        <p id="rest-day-desc">Pro feature — skip today without breaking your streak</p>
+      </div>
+      <button class="rest-day-btn locked" id="rest-day-btn" onclick="toggleRestDay()">🔒 Pro</button>
+    </div>
+
     <div class="week-chart">
       <div class="section-title" style="margin-bottom:0">Weekly Overview <span>Last 7 days</span></div>
       <div class="week-bars" id="week-bars"></div>
@@ -457,6 +481,7 @@
   } catch(e) {}
 
   let currentUser = null, habits = [], todayLogs = new Set(), selectedEmoji = '🧘';
+  let isRestDay = false, restDaysThisMonth = 0;
   const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
   let today = getToday();
 
@@ -505,6 +530,7 @@
     checkNotifStatus();
     await loadHabits();
     await loadTodayLogs();
+    await loadRestDayStatus();
     renderAll();
     renderWeekChart();
     scheduleLocalReminders();
@@ -818,6 +844,140 @@
     document.getElementById('review-overlay').classList.remove('open');
     showToast('Thank you for your feedback! 🙏');
     confetti({ particleCount: 80, spread: 70, origin: { x: .5, y: .5 }, colors: ['#3ecf8e','#fbbf24','#f472b6'] });
+  };
+
+  // ── REST DAY SYSTEM ────────────────────────────────────────────────────────
+  async function loadRestDayStatus() {
+    const monthStr = today.substring(0, 7); // YYYY-MM
+
+    // Count rest days this month
+    const { data: monthRests } = await sb.from('rest_days')
+      .select('rest_date')
+      .eq('user_id', currentUser.id)
+      .like('rest_date', monthStr + '%');
+    restDaysThisMonth = (monthRests || []).length;
+
+    // Check if today is already a rest day
+    const { data: todayRest } = await sb.from('rest_days')
+      .select('id')
+      .eq('user_id', currentUser.id)
+      .eq('rest_date', today)
+      .single();
+    isRestDay = !!todayRest;
+
+    renderRestDayCard();
+  }
+
+  function renderRestDayCard() {
+    const card   = document.getElementById('rest-day-card');
+    const btn    = document.getElementById('rest-day-btn');
+    const title  = document.getElementById('rest-day-title');
+    const desc   = document.getElementById('rest-day-desc');
+    const emoji  = document.getElementById('rest-day-emoji');
+    if (!card) return;
+
+    // Determine monthly limit
+    const limit = userPlan === 'pro_annual' ? 5 : userPlan === 'pro' ? 3 : 0;
+
+    // Trial check — free users get 7-day trial of rest day too
+    const joinDate = new Date(currentUser.created_at);
+    const nowDate  = new Date();
+    const daysSince = Math.floor((nowDate - joinDate) / (1000*60*60*24));
+    const trialActive = daysSince < 7;
+    const trialDaysLeft = 7 - daysSince;
+    const effectiveLimit = (userPlan === 'free' && trialActive) ? 1 : limit; // free trial: 1 rest/month
+
+    // CASE 1: Today is already a rest day
+    if (isRestDay) {
+      card.classList.add('rest-day-active');
+      emoji.textContent = '😴';
+      title.textContent = 'Today is a Rest Day';
+      desc.textContent  = 'Your streak is safe! Remove before midnight to cancel.';
+      btn.textContent   = '✕ Remove';
+      btn.className     = 'rest-day-btn cancel';
+      return;
+    }
+
+    // CASE 2: Free user — trial over
+    if (userPlan === 'free' && !trialActive) {
+      card.classList.remove('rest-day-active');
+      emoji.textContent = '😴';
+      title.textContent = 'Rest Day';
+      desc.textContent  = 'Upgrade to Pro to protect your streak on off days.';
+      btn.textContent   = '🔒 Upgrade';
+      btn.className     = 'rest-day-btn locked';
+      return;
+    }
+
+    // CASE 3: Free user — trial active
+    if (userPlan === 'free' && trialActive) {
+      card.classList.remove('rest-day-active');
+      emoji.textContent = '⏳';
+      title.textContent = `Rest Day Trial — ${trialDaysLeft} day${trialDaysLeft!==1?'s':''} left`;
+      desc.textContent  = restDaysThisMonth >= 1
+        ? 'You have used your 1 free trial rest day this month.'
+        : 'Try it free! 1 rest day available this month.';
+      btn.textContent   = restDaysThisMonth >= 1 ? 'Used' : '😴 Mark Rest';
+      btn.className     = restDaysThisMonth >= 1 ? 'rest-day-btn locked' : 'rest-day-btn activate';
+      return;
+    }
+
+    // CASE 4: Pro user — limit reached
+    if (restDaysThisMonth >= effectiveLimit) {
+      card.classList.remove('rest-day-active');
+      emoji.textContent = '😴';
+      title.textContent = 'Rest Day Limit Reached';
+      desc.textContent  = `You've used all ${effectiveLimit} rest days this month.`;
+      btn.textContent   = 'Limit Reached';
+      btn.className     = 'rest-day-btn locked';
+      return;
+    }
+
+    // CASE 5: Pro user — available
+    const remaining = effectiveLimit - restDaysThisMonth;
+    card.classList.remove('rest-day-active');
+    emoji.textContent = '😴';
+    title.textContent = 'Mark Today as Rest Day';
+    desc.textContent  = `${remaining} rest day${remaining!==1?'s':''} remaining this month.`;
+    btn.textContent   = '😴 Mark Rest';
+    btn.className     = 'rest-day-btn activate';
+  }
+
+  window.toggleRestDay = async function() {
+    const limit = userPlan === 'pro_annual' ? 5 : userPlan === 'pro' ? 3 : 0;
+    const joinDate = new Date(currentUser.created_at);
+    const daysSince = Math.floor((new Date() - joinDate) / (1000*60*60*24));
+    const trialActive = daysSince < 7;
+    const effectiveLimit = (userPlan === 'free' && trialActive) ? 1 : limit;
+
+    // Locked — redirect to upgrade
+    if (userPlan === 'free' && !trialActive) {
+      window.location.href = 'habitdost-upgrade.html'; return;
+    }
+
+    // Remove rest day (only allowed today, before midnight)
+    if (isRestDay) {
+      await sb.from('rest_days').delete().eq('user_id', currentUser.id).eq('rest_date', today);
+      isRestDay = false;
+      restDaysThisMonth = Math.max(0, restDaysThisMonth - 1);
+      renderRestDayCard();
+      showToast('Rest day removed ✓');
+      return;
+    }
+
+    // Limit reached
+    if (restDaysThisMonth >= effectiveLimit) {
+      showToast(`You've used all ${effectiveLimit} rest days this month.`); return;
+    }
+
+    // Mark as rest day
+    const { error } = await sb.from('rest_days').insert({ user_id: currentUser.id, rest_date: today });
+    if (error) { showToast('Error saving rest day'); return; }
+    isRestDay = true;
+    restDaysThisMonth++;
+    renderRestDayCard();
+    showToast('😴 Rest day marked — streak is safe!');
+    confetti({ particleCount: 40, spread: 60, origin: { x:.5, y:.5 }, colors:['#3ecf8e','#d1fae5','#fff'] });
   };
 
   init();

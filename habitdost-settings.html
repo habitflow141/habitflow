@@ -299,8 +299,15 @@
     </div>
     <div class="divider"></div>
     <div class="toggle-row">
-      <div class="toggle-info"><h3>Weekly Summary</h3><p>Receive your weekly habit report every Sunday</p></div>
-      <label class="toggle"><input type="checkbox" id="toggle-weekly" /><span class="toggle-slider"></span></label>
+      <div class="toggle-info"><h3>Personal Best Alert</h3><p>Get notified when you beat your own streak or completion record</p></div>
+      <label class="toggle"><input type="checkbox" id="toggle-personal-best" checked /><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row" id="rest-day-toggle-row">
+      <div class="toggle-info">
+        <h3>Rest Day <span id="rest-day-plan-badge" style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:50px;background:#fef3c7;color:#92400e;margin-left:6px;">Pro</span></h3>
+        <p id="rest-day-toggle-desc">Mark days off without breaking your streak — 3/month on Pro, 5/month on Annual</p>
+      </div>
+      <label class="toggle"><input type="checkbox" id="toggle-rest-day" disabled /><span class="toggle-slider"></span></label>
     </div>
   </div>
 
@@ -392,6 +399,47 @@
           if (btn) btn.textContent = 'Manage Plan';
         }
         if (p.theme) applyTheme(p.theme, false);
+
+        // Rest day toggle — show trial or pro status
+        const restToggle = document.getElementById('toggle-rest-day');
+        const restRow    = document.getElementById('rest-day-toggle-row');
+        const restBadge  = document.getElementById('rest-day-plan-badge');
+        const restDesc   = document.getElementById('rest-day-toggle-desc');
+        const joinDate   = new Date(currentUser.created_at);
+        const daysSince  = Math.floor((new Date() - joinDate) / (1000*60*60*24));
+        const trialActive = daysSince < 7;
+        const trialLeft  = 7 - daysSince;
+
+        if (plan === 'pro_annual') {
+          restToggle.disabled = false;
+          restToggle.checked = true;
+          restBadge.textContent = 'Annual ✨';
+          restBadge.style.background = '#d1fae5';
+          restBadge.style.color = '#065f46';
+          restDesc.textContent = '5 rest days per month — streak stays safe on off days.';
+        } else if (plan === 'pro') {
+          restToggle.disabled = false;
+          restToggle.checked = true;
+          restBadge.textContent = 'Pro ✨';
+          restBadge.style.background = '#d1fae5';
+          restBadge.style.color = '#065f46';
+          restDesc.textContent = '3 rest days per month — streak stays safe on off days.';
+        } else if (trialActive) {
+          restToggle.disabled = false;
+          restToggle.checked = true;
+          restBadge.textContent = `Trial — ${trialLeft}d left`;
+          restBadge.style.background = '#fef3c7';
+          restBadge.style.color = '#92400e';
+          restDesc.textContent = `1 rest day/month during trial. Upgrade to Pro for ${trialLeft} more days of full access.`;
+        } else {
+          restToggle.disabled = true;
+          restToggle.checked = false;
+          restBadge.textContent = '🔒 Pro';
+          restRow.style.opacity = '0.6';
+          restDesc.textContent = 'Upgrade to Pro to unlock rest days.';
+          restRow.onclick = () => window.location.href = 'habitdost-upgrade.html';
+          restRow.style.cursor = 'pointer';
+        }
         
         // 🎨 Theme trial — free users get 7 days of all themes
         if (plan !== 'pro') {
