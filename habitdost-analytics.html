@@ -166,35 +166,48 @@
 
     /* MONTHLY CHART */
     .monthly-chart { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
-    .chart-body { display: flex; gap: 28px; align-items: flex-start; margin-top: 16px; }
-    .chart-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-shrink: 0; width: 200px; }
-    .chart-meta-item { display: flex; flex-direction: column; gap: 3px; background: var(--leaf); border-radius: 14px; padding: 14px; }
-    .chart-meta-icon { font-size: 1.2rem; margin-bottom: 2px; }
-    .chart-meta-label { font-size: .65rem; color: var(--muted); }
-    .chart-meta-value { font-size: 1.35rem; font-weight: 800; color: var(--ink); line-height: 1; }
-    .chart-right { flex: 1; display: flex; flex-direction: column; gap: 14px; }
-    .chart-section-title { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; text-align: center; }
-    .chart-bars-outer { background: var(--leaf); border-radius: 16px; padding: 16px 14px 0; position: relative; }
-    .chart-yaxis { position: absolute; left: 10px; top: 16px; bottom: 36px; display: flex; flex-direction: column-reverse; justify-content: space-between; }
-    .chart-yaxis-lbl { font-size: .6rem; font-weight: 700; color: var(--muted); line-height: 1; }
-    .chart-hlines { position: absolute; left: 28px; right: 14px; top: 16px; bottom: 36px; display: flex; flex-direction: column-reverse; justify-content: space-between; pointer-events: none; }
-    .chart-hline { width: 100%; height: 1px; background: rgba(0,0,0,.07); }
-    .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 220px; padding-left: 22px; }
-    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0; position: relative; }
-    .chart-bar { width: 100%; border-radius: 8px 8px 0 0; background: rgba(0,0,0,.07); transition: height .8s cubic-bezier(.34,1.56,.64,1); }
-    .chart-bar.has-data { background: linear-gradient(180deg, #6ee7b7 0%, var(--teal) 100%); }
-    .chart-bar.full { background: linear-gradient(180deg, #34d399 0%, #047857 100%); box-shadow: 0 4px 14px rgba(5,150,105,.3); }
-    .chart-bar.active { background: linear-gradient(180deg, var(--mint), var(--teal)); box-shadow: 0 0 0 3px rgba(5,150,105,.25); }
-    .chart-bar.future { background: rgba(0,0,0,.05); }
-    .chart-bar.rest { background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 1rem; border-radius: 8px 8px 0 0; }
-    .chart-lbl { font-size: .6rem; font-weight: 600; color: var(--muted); text-align: center; white-space: nowrap; padding: 7px 0 10px; width: 100%; }
+    /* MONTHLY OVERVIEW LAYOUT — 3 columns: stats | chart | legend */
+    .chart-body { display: flex; gap: 0; align-items: stretch; margin-top: 20px; width: 100%; box-sizing: border-box; }
+    /* LEFT — stats 2x2 */
+    .chart-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0; width: 190px; margin-right: 20px; align-content: start; }
+    .chart-meta-item { display: flex; flex-direction: column; gap: 3px; background: var(--leaf); border-radius: 12px; padding: 12px; }
+    .chart-meta-icon { font-size: 1.1rem; }
+    .chart-meta-label { font-size: .63rem; color: var(--muted); margin-top: 2px; }
+    .chart-meta-value { font-size: 1.25rem; font-weight: 800; color: var(--ink); line-height: 1; }
+    /* CENTER — title + chart box */
+    .chart-center { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .chart-section-title { font-size: .7rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; text-align: center; }
+    /* chart box — white bg, border, like reference */
+    .chart-box { background: #fff; border: 1.5px solid #e2e8e0; border-radius: 14px; padding: 14px 14px 0 8px; display: flex; flex-direction: column; overflow: hidden; }
+    .chart-inner { display: flex; flex: 1; align-items: flex-end; gap: 0; }
+    /* y-axis column */
+    .chart-yaxis { display: flex; flex-direction: column-reverse; justify-content: space-between; width: 20px; flex-shrink: 0; padding-bottom: 30px; }
+    .chart-yaxis-lbl { font-size: .58rem; font-weight: 700; color: #aaa; text-align: right; padding-right: 4px; line-height: 1; }
+    /* bars area with h-lines behind */
+    .chart-plot { flex: 1; position: relative; display: flex; align-items: flex-end; }
+    .chart-hlines { position: absolute; inset: 0; bottom: 30px; display: flex; flex-direction: column-reverse; justify-content: space-between; pointer-events: none; }
+    .chart-hline { width: 100%; height: 1px; background: rgba(0,0,0,.08); }
+    .chart-bars { display: flex; align-items: flex-end; gap: 6px; width: 100%; height: 200px; padding-bottom: 30px; position: relative; z-index: 1; box-sizing: border-box; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; position: relative; }
+    .chart-bar { width: 80%; border-radius: 5px 5px 0 0; background: rgba(0,0,0,.06); transition: height .8s cubic-bezier(.34,1.56,.64,1); flex-shrink: 0; }
+    .chart-bar.has-data { background: linear-gradient(180deg, #6ee7b7, var(--teal)); }
+    .chart-bar.full { background: linear-gradient(180deg, #34d399, #047857); box-shadow: 0 3px 10px rgba(5,150,105,.3); }
+    .chart-bar.active { background: linear-gradient(180deg, var(--mint), var(--teal)); box-shadow: 0 0 0 2px var(--teal); }
+    .chart-bar.future { background: rgba(0,0,0,.04); }
+    .chart-bar.rest { background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+    .chart-lbl { font-size: .6rem; font-weight: 600; color: #888; white-space: nowrap; transform: rotate(-40deg); transform-origin: top center; margin-top: 4px; height: 28px; display: flex; align-items: flex-start; }
     .chart-lbl.today-lbl { color: var(--teal); font-weight: 800; }
-    .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-    .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: .73rem; color: var(--muted); }
-    .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
-    .chart-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: .7rem; padding: 5px 10px; border-radius: 8px; white-space: nowrap; z-index: 10; pointer-events: none; }
+    .chart-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: .67rem; padding: 4px 9px; border-radius: 7px; white-space: nowrap; z-index: 20; pointer-events: none; }
     .chart-bar-wrap:hover .chart-tooltip { display: block; }
-    @media (max-width: 580px) { .chart-body { flex-direction: column; } .chart-meta { width:100%; } }
+    /* RIGHT — legend stacked */
+    .chart-legend { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; width: 90px; margin-left: 16px; padding-top: 28px; }
+    .chart-legend-item { display: flex; align-items: center; gap: 7px; font-size: .73rem; color: var(--muted); white-space: nowrap; }
+    .legend-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+    @media (max-width: 620px) {
+      .chart-body { flex-wrap: wrap; }
+      .chart-meta { width: 100%; margin-right: 0; margin-bottom: 14px; }
+      .chart-legend { flex-direction: row; flex-wrap: wrap; width: 100%; margin-left: 0; padding-top: 0; margin-top: 10px; }
+    }
 
     /* STREAK CARD MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity .2s; backdrop-filter: blur(8px); }
@@ -782,7 +795,7 @@
       const barClass = isFull ? 'full' : hasData ? 'has-data' : isFuture ? 'future' : '';
       const activeClass = isToday ? ' active' : '';
       // Scale: each habit = (100/max)% of chart height, minimum 10% floor for missed days
-      const barH = isFuture ? 6 : hasData ? Math.max(pct, 12) : 8;
+      const barH = isFuture ? 5 : hasData ? Math.max(Math.round((count/max)*90), 15) : 6;
       const tooltipText = isFuture ? 'Upcoming' : isToday ? `Today: ${count}/${max}` : `${count}/${max} habits`;
 
       barsHTML += `
@@ -796,19 +809,23 @@
     el.innerHTML = `
       <div class="chart-body">
         ${metaHTML}
-        <div class="chart-right">
+        <div class="chart-center">
           <div class="chart-section-title">This Week's Daily Completion</div>
-          <div class="chart-bars-outer">
-            <div class="chart-yaxis">${yAxisHTML}</div>
-            <div class="chart-hlines">${hLinesHTML}</div>
-            <div class="chart-bars">${barsHTML}</div>
+          <div class="chart-box">
+            <div class="chart-inner">
+              <div class="chart-yaxis">${yAxisHTML}</div>
+              <div class="chart-plot">
+                <div class="chart-hlines">${hLinesHTML}</div>
+                <div class="chart-bars">${barsHTML}</div>
+              </div>
+            </div>
           </div>
-          <div class="chart-legend">
-            <div class="chart-legend-item"><div class="legend-dot" style="background:linear-gradient(180deg,#34d399,#047857)"></div>Perfect day</div>
-            <div class="chart-legend-item"><div class="legend-dot" style="background:linear-gradient(180deg,#6ee7b7,var(--teal))"></div>Partial</div>
-            <div class="chart-legend-item"><div class="legend-dot" style="background:rgba(0,0,0,.08)"></div>Missed</div>
-            <div class="chart-legend-item"><div class="legend-dot" style="background:#dbeafe"></div>Rest day</div>
-          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-item"><div class="legend-dot" style="background:linear-gradient(180deg,#34d399,#047857)"></div>Perfect day</div>
+          <div class="chart-legend-item"><div class="legend-dot" style="background:linear-gradient(180deg,#6ee7b7,var(--teal))"></div>Partial</div>
+          <div class="chart-legend-item"><div class="legend-dot" style="background:rgba(0,0,0,.08)"></div>Missed</div>
+          <div class="chart-legend-item"><div class="legend-dot" style="background:#dbeafe"></div>Rest day</div>
         </div>
       </div>`;
   }
