@@ -166,23 +166,24 @@
 
     /* MONTHLY CHART */
     .monthly-chart { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
-    .chart-meta { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-    .chart-meta-item { display: flex; align-items: center; gap: 10px; background: var(--leaf); border-radius: 14px; padding: 12px 18px; flex: 1; min-width: 110px; }
-    .chart-meta-label { font-size: .72rem; color: var(--muted); margin-bottom: 2px; }
-    .chart-meta-value { font-size: 1.25rem; font-weight: 800; color: var(--ink); line-height: 1; }
-    .chart-section-title { font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 10px; }
-    .chart-bars-wrap { background: var(--leaf); border-radius: 14px; padding: 18px 14px 10px; }
-    .chart-bars { display: flex; align-items: flex-end; gap: 5px; height: 140px; position: relative; }
-    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; }
-    .chart-bar { width: 100%; border-radius: 5px 5px 0 0; background: rgba(0,0,0,.07); min-height: 5px; transition: height .7s cubic-bezier(.34,1.56,.64,1); position: relative; }
+    .chart-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+    .chart-meta-item { display: flex; align-items: center; gap: 10px; background: var(--leaf); border-radius: 14px; padding: 12px 14px; }
+    .chart-meta-label { font-size: .7rem; color: var(--muted); margin-bottom: 3px; }
+    .chart-meta-value { font-size: 1.2rem; font-weight: 800; color: var(--ink); line-height: 1; }
+    .chart-section-title { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+    .chart-bars-wrap { background: var(--leaf); border-radius: 14px; padding: 20px 16px 12px; }
+    .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 180px; position: relative; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+    .chart-bar { width: 100%; border-radius: 6px 6px 0 0; background: rgba(0,0,0,.08); min-height: 6px; transition: height .7s cubic-bezier(.34,1.56,.64,1); position: relative; }
     .chart-bar.has-data { background: linear-gradient(180deg, #6ee7b7 0%, var(--teal) 100%); }
-    .chart-bar.full { background: linear-gradient(180deg, #34d399 0%, #047857 100%); box-shadow: 0 3px 10px rgba(5,150,105,.3); }
+    .chart-bar.full { background: linear-gradient(180deg, #34d399 0%, #047857 100%); box-shadow: 0 4px 12px rgba(5,150,105,.3); }
     .chart-bar.active { background: linear-gradient(180deg, var(--mint), var(--teal)); outline: 2.5px solid var(--teal); outline-offset: 2px; }
-    .chart-bar.future { background: rgba(0,0,0,.06); }
-    .chart-lbl { font-size: .6rem; font-weight: 700; color: var(--muted); min-height: 10px; }
-    .chart-lbl.today-lbl { color: var(--teal); font-weight: 800; font-size: .65rem; }
-    .chart-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: .68rem; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 10; pointer-events: none; }
+    .chart-bar.future { background: rgba(0,0,0,.05); }
+    .chart-lbl { font-size: .72rem; font-weight: 700; color: var(--muted); min-height: 12px; text-align: center; }
+    .chart-lbl.today-lbl { color: var(--teal); font-weight: 800; }
+    .chart-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: .7rem; padding: 5px 10px; border-radius: 8px; white-space: nowrap; z-index: 10; pointer-events: none; }
     .chart-bar-wrap:hover .chart-tooltip { display: block; }
+    @media (max-width: 500px) { .chart-meta { grid-template-columns: repeat(2, 1fr); } }
 
     /* STREAK CARD MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity .2s; backdrop-filter: blur(8px); }
@@ -692,7 +693,6 @@
   function renderMonthlyChart() {
     const el = document.getElementById('monthly-bars');
     const now = new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const todayNum = now.getDate();
     const max = habits.length || 1;
@@ -703,18 +703,18 @@
       logMap[l.completed_date] = (logMap[l.completed_date] || 0) + 1;
     });
 
-    // Compute month stats
+    // Month stats (full month so far)
     let daysLogged = 0, totalDone = 0, perfectDays = 0;
-    for (let d = 1; d < todayNum; d++) {
+    for (let d = 1; d <= todayNum; d++) {
       const ds = `${monthStr}-${String(d).padStart(2,'0')}`;
       const c = logMap[ds] || 0;
       if (c > 0) daysLogged++;
       totalDone += c;
       if (c >= max) perfectDays++;
     }
-    const monthRate = todayNum > 1 ? Math.round((daysLogged / (todayNum - 1)) * 100) : 0;
+    const monthRate = todayNum > 0 ? Math.round((daysLogged / todayNum) * 100) : 0;
 
-    // Month label update
+    // Month label
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const lbl = document.getElementById('month-label');
     if (lbl) lbl.textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
@@ -722,44 +722,51 @@
     // Meta row
     const metaHTML = `
       <div class="chart-meta">
-        <div class="chart-meta-item"><span style="font-size:1.1rem">📅</span><div><div class="chart-meta-label">Active days</div><div class="chart-meta-value">${daysLogged}</div></div></div>
-        <div class="chart-meta-item"><span style="font-size:1.1rem">✅</span><div><div class="chart-meta-label">Check-ins</div><div class="chart-meta-value">${totalDone}</div></div></div>
-        <div class="chart-meta-item"><span style="font-size:1.1rem">🌟</span><div><div class="chart-meta-label">Perfect days</div><div class="chart-meta-value">${perfectDays}</div></div></div>
-        <div class="chart-meta-item"><span style="font-size:1.1rem">📈</span><div><div class="chart-meta-label">Month rate</div><div class="chart-meta-value">${monthRate}%</div></div></div>
+        <div class="chart-meta-item"><span style="font-size:1.2rem">📅</span><div><div class="chart-meta-label">Active days</div><div class="chart-meta-value">${daysLogged}</div></div></div>
+        <div class="chart-meta-item"><span style="font-size:1.2rem">✅</span><div><div class="chart-meta-label">Check-ins</div><div class="chart-meta-value">${totalDone}</div></div></div>
+        <div class="chart-meta-item"><span style="font-size:1.2rem">🌟</span><div><div class="chart-meta-label">Perfect days</div><div class="chart-meta-value">${perfectDays}</div></div></div>
+        <div class="chart-meta-item"><span style="font-size:1.2rem">📈</span><div><div class="chart-meta-label">Month rate</div><div class="chart-meta-value">${monthRate}%</div></div></div>
       </div>`;
 
-    // Bars
+    // Show only current week: Monday of this week → Sunday (7 days)
+    const dayOfWeek = now.getDay(); // 0=Sun,1=Mon,...6=Sat
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() + mondayOffset);
+
+    const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     let barsHTML = '';
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${monthStr}-${String(d).padStart(2,'0')}`;
-      const count   = logMap[dateStr] || 0;
-      const pct     = Math.round((count / max) * 100);
-      const isToday = d === todayNum;
-      const isFuture = d > todayNum;
-      const isFull  = count >= max && !isFuture;
-      const hasData = count > 0 && !isFuture;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const count    = logMap[ds] || 0;
+      const pct      = Math.round((count / max) * 100);
+      const isToday  = ds === today;
+      const isFuture = d > now && !isToday;
+      const isFull   = count >= max && !isFuture;
+      const hasData  = count > 0 && !isFuture;
       const barClass = isToday ? 'active' : isFuture ? 'future' : isFull ? 'full' : hasData ? 'has-data' : '';
-      const barH = isFuture ? 6 : (hasData ? Math.max(pct, 18) : 8);
-      const showLbl = d === 1 || d % 7 === 0 || d === todayNum;
-      const tooltipText = isFuture ? 'Upcoming' : `${count}/${max} habits`;
+      const barH     = isFuture ? 6 : (hasData ? Math.max(pct, 20) : 8);
+      const tooltipText = isFuture ? 'Upcoming' : isToday ? `Today: ${count}/${max}` : `${count}/${max} habits`;
 
       barsHTML += `
         <div class="chart-bar-wrap">
           <div class="chart-tooltip">${tooltipText}</div>
           <div class="chart-bar ${barClass}" style="height:${barH}%"></div>
-          <div class="chart-lbl ${isToday ? 'today-lbl' : ''}">${showLbl ? (isToday ? '📍' : d) : ''}</div>
+          <div class="chart-lbl ${isToday ? 'today-lbl' : ''}">${isToday ? '📍' : dayNames[i]}</div>
         </div>`;
     }
 
     el.innerHTML = metaHTML + `
-      <div class="chart-section-title">Daily Habit Completion</div>
+      <div class="chart-section-title">This Week's Daily Completion</div>
       <div class="chart-bars-wrap">
         <div class="chart-bars">${barsHTML}</div>
       </div>
       <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:3px;background:linear-gradient(180deg,#34d399,#047857)"></div> Perfect day</div>
         <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:3px;background:linear-gradient(180deg,#6ee7b7,var(--teal))"></div> Partial</div>
-        <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:3px;background:rgba(0,0,0,.07)"></div> Missed</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:3px;background:rgba(0,0,0,.08)"></div> Missed</div>
       </div>`;
   }
 
