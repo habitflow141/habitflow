@@ -134,6 +134,21 @@
     .h3 { background: #0fba82; }
     .h4 { background: #0d9488; }
     .heatmap-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; justify-content: flex-end; }
+    /* DAY DETAIL PANEL */
+    .day-detail { margin-top: 20px; border-top: 1.5px solid var(--border); padding-top: 18px; display: none; }
+    .day-detail.open { display: block; }
+    .day-detail-title { font-size: .82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+    .day-detail-title span { color: var(--teal); }
+    .day-detail-close { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0; line-height: 1; }
+    .day-detail-close:hover { color: var(--ink); }
+    .habit-day-list { display: flex; flex-direction: column; gap: 10px; }
+    .habit-day-item { display: flex; align-items: center; gap: 14px; background: var(--bg); border-radius: 14px; padding: 12px 16px; border: 1.5px solid var(--border); }
+    .habit-day-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--leaf); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .habit-day-name { font-size: .92rem; font-weight: 600; color: var(--ink); }
+    .habit-day-status { margin-left: auto; font-size: .8rem; font-weight: 700; padding: 4px 12px; border-radius: 50px; }
+    .status-done { background: #d1fae5; color: #065f46; }
+    .status-missed { background: #fee2e2; color: #991b1b; }
+    .day-detail-empty { text-align: center; padding: 20px; color: var(--muted); font-size: .88rem; }
     .heatmap-legend span { font-size: .72rem; color: var(--muted); }
     .legend-cell { width: 14px; height: 14px; border-radius: 3px; }
 
@@ -313,6 +328,14 @@
       <div class="legend-cell h3"></div>
       <div class="legend-cell h4"></div>
       <span>More</span>
+    </div>
+    <!-- DAY DETAIL PANEL -->
+    <div class="day-detail" id="day-detail">
+      <div class="day-detail-title">
+        Habits on <span id="detail-date-label">—</span>
+        <button class="day-detail-close" onclick="closeDayDetail()">✕</button>
+      </div>
+      <div class="habit-day-list" id="habit-day-list"></div>
     </div>
   </div>
 
@@ -504,11 +527,59 @@
 
       const count = logMap[ds] || 0;
       const lvl   = count === 0 ? 0 : count >= max ? 4 : count >= max*.75 ? 3 : count >= max*.5 ? 2 : 1;
-      return `<div class="heat-cell h${lvl}"${ring} title="${label}: ${count} habit${count!==1?'s':''} completed"></div>`;
+      return `<div class="heat-cell h${lvl}"${ring} title="${label}: ${count} habit${count!==1?'s':''} completed" onclick="showDayDetail('${ds}','${label}')"></div>`;
     }).join('');
   }
 
-    function renderMonthlyChart() {
+    // ── DAY DETAIL ────────────────────────────────────────────────────────────
+  window.closeDayDetail = function() {
+    document.getElementById('day-detail').classList.remove('open');
+  };
+
+  window.showDayDetail = async function(dateStr, label) {
+    const panel = document.getElementById('day-detail');
+    const listEl = document.getElementById('habit-day-list');
+    const dateLabel = document.getElementById('detail-date-label');
+
+    // Format date nicely
+    const d = new Date(dateStr + 'T12:00:00');
+    dateLabel.textContent = d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+    // Show panel with loading state
+    panel.classList.add('open');
+    listEl.innerHTML = `<div class="day-detail-empty">Loading...</div>`;
+
+    // Scroll panel into view
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Fetch which habits were logged on this date
+    const { data: logs } = await sb.from('habit_logs')
+      .select('habit_id')
+      .eq('user_id', currentUser.id)
+      .eq('completed_date', dateStr);
+
+    const doneIds = new Set((logs || []).map(l => l.habit_id));
+
+    if (!habits.length) {
+      listEl.innerHTML = `<div class="day-detail-empty">No habits tracked yet.</div>`;
+      return;
+    }
+
+    // Build list — show all habits, mark done or missed
+    listEl.innerHTML = habits.map(h => {
+      const done = doneIds.has(h.id);
+      return `
+        <div class="habit-day-item">
+          <div class="habit-day-icon">${h.icon || '🎯'}</div>
+          <div class="habit-day-name">${h.name}</div>
+          <div class="habit-day-status ${done ? 'status-done' : 'status-missed'}">
+            ${done ? '✅ Done' : '❌ Missed'}
+          </div>
+        </div>`;
+    }).join('');
+  };
+
+  function renderMonthlyChart() {
     const el = document.getElementById('monthly-bars');
     // Get days in current month
     const now = new Date();
