@@ -322,7 +322,7 @@
     </div>
     <div class="header-btns">
       <button class="btn-export csv" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="btn-export share" onclick="openStreakCard()">🃏 Share Streak Card</button>
+      <button class="btn-export share" id="streak-card-btn" onclick="openStreakCard()" style="display:none;">🃏 Share Streak Card</button>
     </div>
   </div>
 
@@ -376,7 +376,7 @@
   <!-- MONTHLY CHART -->
   <div class="monthly-chart" id="monthly-section">
     <div class="section-title">Monthly Overview <span id="month-label"></span></div>
-    <div class="chart-bars" id="monthly-bars"><div class="loading"><div class="spinner"></div></div></div>
+    <div id="monthly-bars"><div class="loading"><div class="spinner"></div></div></div>
   </div>
 
   <!-- PER HABIT STATS -->
@@ -452,6 +452,11 @@
     const { data: profile } = await sb.from('profiles').select('plan, full_name').eq('id', currentUser.id).single();
     userPlan = profile?.plan || 'free';
     document.getElementById('nav-plan').textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
+    // Show streak card button only for annual plan
+    if (userPlan === 'pro_annual') {
+      const scBtn = document.getElementById('streak-card-btn');
+      if (scBtn) scBtn.style.display = '';
+    }
 
     await loadData();
 
