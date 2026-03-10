@@ -420,19 +420,60 @@
     document.getElementById('nav-plan').textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
 
     await loadData();
-    renderAll();
 
-    // 🔒 Lock advanced analytics for free users
+    // 🔒 Plan enforcement
     if (userPlan !== 'pro') {
-      const lockMsg = `<div style="text-align:center;padding:40px 20px;background:var(--card);border:1.5px dashed var(--border);border-radius:18px;margin-top:16px;">
-        <div style="font-size:2rem;margin-bottom:12px">🔒</div>
-        <h3 style="color:var(--ink);font-size:1rem;margin-bottom:8px">Pro Feature</h3>
-        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Upgrade to Pro to unlock the full heatmap, monthly charts, per-habit stats and CSV export.</p>
-        <a href="habitdost-upgrade.html" style="display:inline-block;padding:10px 24px;background:var(--teal);color:#fff;border-radius:50px;font-weight:700;font-size:.85rem;text-decoration:none;">Upgrade to Pro ⭐</a>
-      </div>`;
-      const heatmapSection = document.querySelector('.section-card');
-      if (heatmapSection) heatmapSection.insertAdjacentHTML('afterend', lockMsg);
+      // Calculate days since user joined
+      const joinDate = new Date(currentUser.created_at);
+      const todayDate = new Date(today + 'T12:00:00');
+      const daysSinceJoin = Math.floor((todayDate - joinDate) / (1000 * 60 * 60 * 24));
+      const trialDaysLeft = 7 - daysSinceJoin;
+      const heatmapTrialOver = daysSinceJoin >= 7;
+
+      // Heatmap lock message (shown on day 8+)
+      const heatmapLockHTML = `
+        <div style="text-align:center;padding:40px 24px;">
+          <div style="font-size:2.5rem;margin-bottom:14px">🔒</div>
+          <h3 style="color:var(--ink);font-size:1.1rem;font-weight:800;margin-bottom:8px">Your 7-Day Free Trial Has Ended</h3>
+          <p style="color:var(--muted);font-size:.88rem;margin-bottom:6px;max-width:320px;margin-left:auto;margin-right:auto;">You've experienced the Activity Heatmap for 7 days!</p>
+          <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px;max-width:320px;margin-left:auto;margin-right:auto;">Upgrade to Pro to keep tracking your progress and never lose your streak history.</p>
+          <a href="habitdost-upgrade.html" style="display:inline-block;padding:12px 28px;background:var(--teal);color:#fff;border-radius:50px;font-weight:700;font-size:.9rem;text-decoration:none;">Upgrade to Pro ⭐</a>
+        </div>`;
+
+      // Heatmap trial banner (shown during trial days 1-7)
+      const trialBannerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f0fdf4,#d1fae5);border:1.5px solid var(--teal);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+          <span style="font-size:1.3rem">⏳</span>
+          <div>
+            <div style="font-size:.85rem;font-weight:700;color:var(--teal)">Free Trial — ${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} left</div>
+            <div style="font-size:.78rem;color:var(--muted)">Enjoying the heatmap? Upgrade to Pro to keep it after your trial ends.</div>
+          </div>
+          <a href="habitdost-upgrade.html" style="margin-left:auto;flex-shrink:0;padding:7px 16px;background:var(--teal);color:#fff;border-radius:50px;font-size:.78rem;font-weight:700;text-decoration:none;">Upgrade</a>
+        </div>`;
+
+      // Lock or show heatmap based on trial status
+      const heatmapCard = document.querySelector('.heatmap-card');
+      if (heatmapTrialOver) {
+        // Day 8+ — lock the heatmap completely
+        if (heatmapCard) heatmapCard.innerHTML = heatmapLockHTML;
+      } else {
+        // Days 1-7 — show trial banner above heatmap, then render normally
+        if (heatmapCard) heatmapCard.insertAdjacentHTML('afterbegin', trialBannerHTML);
+      }
+
+      // Always lock monthly chart, habit bars, streak card for free users
+      ['#monthly-section', '#habit-bars-section', '#streak-card-section'].forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) el.style.display = 'none';
+      });
+
+      // Render stats + heatmap (if trial still active)
+      renderStats();
+      if (!heatmapTrialOver) renderHeatmap();
+      return;
     }
+
+    renderAll();
   }
 
   async function loadData() {
