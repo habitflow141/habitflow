@@ -560,22 +560,23 @@
 
     if (!logs || logs.length === 0) {
       // No completions that day — show all habits that existed as missed
-      // Fetch ALL habits (active + inactive) to show full picture
-      const { data: allHabits } = await sb
+      // Only show currently active habits as missed — deleted = user removed intentionally
+      const { data: activeOnly } = await sb
         .from('habits')
-        .select('id, name, icon, is_active, created_at')
+        .select('id, name, icon, created_at')
         .eq('user_id', currentUser.id)
-        .lte('created_at', dateStr + 'T23:59:59');  // only habits that existed on that day
+        .eq('is_active', true)
+        .lte('created_at', dateStr + 'T23:59:59');
 
-      if (!allHabits || !allHabits.length) {
-        listEl.innerHTML = `<div class="day-detail-empty">No habits were tracked on this day.</div>`;
+      if (!activeOnly || !activeOnly.length) {
+        listEl.innerHTML = `<div class="day-detail-empty">No habits were active on this day.</div>`;
         return;
       }
 
-      listEl.innerHTML = allHabits.map(h => `
+      listEl.innerHTML = activeOnly.map(h => `
         <div class="habit-day-item">
           <div class="habit-day-icon">${h.icon || '🎯'}</div>
-          <div class="habit-day-name">${h.name}${!h.is_active ? ' <span style="font-size:.72rem;color:var(--muted)">(deleted)</span>' : ''}</div>
+          <div class="habit-day-name">${h.name}</div>
           <div class="habit-day-status status-missed">❌ Missed</div>
         </div>`).join('');
       return;
@@ -590,34 +591,44 @@
       return;
     }
 
-    // Also fetch all habits that existed on that day to show missed ones too
-    const { data: allHabits } = await sb
+    const completedIds = new Set(completedHabits.map(h => h.id));
+
+    // Fetch ONLY currently active habits that existed on that day — for missed list
+    // Deleted habits should NOT appear as missed — they were intentionally removed
+    const { data: activeHabits } = await sb
       .from('habits')
-      .select('id, name, icon, is_active, created_at')
+      .select('id, name, icon, created_at')
       .eq('user_id', currentUser.id)
+      .eq('is_active', true)
       .lte('created_at', dateStr + 'T23:59:59');
 
-    const completedIds = new Set(completedHabits.map(h => h.id));
-    const allThatDay = allHabits || [];
+    const activeIds = new Set((activeHabits || []).map(h => h.id));
 
-    // Show completed ones first (✅), then missed ones (❌)
-    const sorted = [
-      ...allThatDay.filter(h => completedIds.has(h.id)),
-      ...allThatDay.filter(h => !completedIds.has(h.id))
-    ];
+    // ✅ Done = completed that day (even if deleted later — data stays)
+    // ❌ Missed = currently active + existed that day + not completed that day
+    const doneList = completedHabits;
+    const missedList = (activeHabits || []).filter(h => !completedIds.has(h.id));
 
-    listEl.innerHTML = sorted.map(h => {
-      const done = completedIds.has(h.id);
-      const deletedTag = !h.is_active ? ' <span style="font-size:.72rem;color:var(--muted)">(deleted)</span>' : '';
-      return `
-        <div class="habit-day-item">
-          <div class="habit-day-icon">${h.icon || '🎯'}</div>
-          <div class="habit-day-name">${h.name}${deletedTag}</div>
-          <div class="habit-day-status ${done ? 'status-done' : 'status-missed'}">
-            ${done ? '✅ Done' : '❌ Missed'}
-          </div>
-        </div>`;
-    }).join('');
+    if (!doneList.length && !missedList.length) {
+      listEl.innerHTML = `<div class="day-detail-empty">No habit data for this day.</div>`;
+      return;
+    }
+
+    const doneHTML = doneList.map(h => `
+      <div class="habit-day-item">
+        <div class="habit-day-icon">${h.icon || '🎯'}</div>
+        <div class="habit-day-name">${h.name}</div>
+        <div class="habit-day-status status-done">✅ Done</div>
+      </div>`).join('');
+
+    const missedHTML = missedList.map(h => `
+      <div class="habit-day-item">
+        <div class="habit-day-icon">${h.icon || '🎯'}</div>
+        <div class="habit-day-name">${h.name}</div>
+        <div class="habit-day-status status-missed">❌ Missed</div>
+      </div>`).join('');
+
+    listEl.innerHTML = doneHTML + missedHTML;
   };
 
   function renderMonthlyChart() {
