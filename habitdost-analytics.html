@@ -166,30 +166,30 @@
 
     /* MONTHLY CHART */
     .monthly-chart { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; }
-    .chart-layout { display: flex; gap: 20px; align-items: flex-start; }
-    .chart-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; flex-shrink: 0; width: 180px; }
-    .chart-meta-item { display: flex; flex-direction: column; gap: 4px; background: var(--leaf); border-radius: 14px; padding: 12px 14px; }
-    .chart-meta-icon { font-size: 1.1rem; }
+    .chart-body { display: flex; gap: 18px; align-items: flex-end; margin-top: 16px; }
+    .chart-meta { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; width: 130px; }
+    .chart-meta-item { display: flex; flex-direction: column; gap: 3px; background: var(--leaf); border-radius: 14px; padding: 14px; }
+    .chart-meta-icon { font-size: 1.2rem; margin-bottom: 2px; }
     .chart-meta-label { font-size: .68rem; color: var(--muted); }
-    .chart-meta-value { font-size: 1.3rem; font-weight: 800; color: var(--ink); line-height: 1; }
+    .chart-meta-value { font-size: 1.4rem; font-weight: 800; color: var(--ink); line-height: 1; }
     .chart-center { flex: 1; display: flex; flex-direction: column; }
-    .chart-section-title { font-size: .75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; text-align: center; }
-    .chart-bars-wrap { background: var(--leaf); border-radius: 16px; padding: 24px 16px 14px; }
-    .chart-bars { display: flex; align-items: flex-end; gap: 10px; height: 200px; }
+    .chart-section-title { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; text-align: center; }
+    .chart-bars-wrap { background: var(--leaf); border-radius: 16px; padding: 20px 14px 0; }
+    .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 240px; }
     .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
     .chart-bar { width: 100%; border-radius: 8px 8px 0 0; background: rgba(0,0,0,.07); transition: height .8s cubic-bezier(.34,1.56,.64,1); }
     .chart-bar.has-data { background: linear-gradient(180deg, #6ee7b7 0%, var(--teal) 100%); }
     .chart-bar.full { background: linear-gradient(180deg, #34d399 0%, #047857 100%); box-shadow: 0 4px 14px rgba(5,150,105,.3); }
     .chart-bar.active { background: linear-gradient(180deg, var(--mint), var(--teal)); box-shadow: 0 0 0 3px rgba(5,150,105,.25); }
     .chart-bar.future { background: rgba(0,0,0,.05); }
-    .chart-lbl { font-size: .68rem; font-weight: 600; color: var(--muted); text-align: center; white-space: nowrap; }
+    .chart-lbl { font-size: .62rem; font-weight: 600; color: var(--muted); text-align: center; white-space: nowrap; padding: 8px 0 10px; }
     .chart-lbl.today-lbl { color: var(--teal); font-weight: 800; }
-    .chart-legend { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; padding-top: 8px; }
-    .chart-legend-item { display: flex; align-items: center; gap: 8px; font-size: .75rem; color: var(--muted); white-space: nowrap; }
+    .chart-legend { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; width: 100px; }
+    .chart-legend-item { display: flex; align-items: center; gap: 8px; font-size: .75rem; color: var(--muted); }
     .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
     .chart-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: .7rem; padding: 5px 10px; border-radius: 8px; white-space: nowrap; z-index: 10; pointer-events: none; }
     .chart-bar-wrap:hover .chart-tooltip { display: block; }
-    @media (max-width: 600px) { .chart-layout { flex-direction: column; } .chart-meta { width: 100%; grid-template-columns: repeat(4,1fr); } .chart-legend { flex-direction: row; flex-wrap: wrap; } }
+    @media (max-width: 580px) { .chart-body { flex-direction: column; } .chart-meta { width:100%; flex-direction: row; } .chart-legend { flex-direction: row; width:100%; } }
 
     /* STREAK CARD MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity .2s; backdrop-filter: blur(8px); }
@@ -725,13 +725,11 @@
     const lbl = document.getElementById('month-label');
     if (lbl) lbl.textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
-    // Meta cards
+    // Meta cards — only Active days + Perfect days (check-ins & rate shown in stats above)
     const metaHTML = `
       <div class="chart-meta">
         <div class="chart-meta-item"><div class="chart-meta-icon">📅</div><div class="chart-meta-label">Active days</div><div class="chart-meta-value">${daysLogged}</div></div>
-        <div class="chart-meta-item"><div class="chart-meta-icon">✅</div><div class="chart-meta-label">Check-ins</div><div class="chart-meta-value">${totalDone}</div></div>
         <div class="chart-meta-item"><div class="chart-meta-icon">🌟</div><div class="chart-meta-label">Perfect days</div><div class="chart-meta-value">${perfectDays}</div></div>
-        <div class="chart-meta-item"><div class="chart-meta-icon">📈</div><div class="chart-meta-label">Month rate</div><div class="chart-meta-value">${monthRate}%</div></div>
       </div>`;
 
     // Show only current week: Monday of this week → Sunday (7 days)
@@ -753,7 +751,7 @@
       const isFull   = count >= max && !isFuture;
       const hasData  = count > 0 && !isFuture;
       const barClass = isToday ? 'active' : isFuture ? 'future' : isFull ? 'full' : hasData ? 'has-data' : '';
-      const barH     = isFuture ? 8 : (hasData ? Math.max(pct, 45) : 10);
+      const barH     = isFuture ? 8 : (hasData ? Math.max(pct, 65) : 10);
       const tooltipText = isFuture ? 'Upcoming' : isToday ? `Today: ${count}/${max}` : `${count}/${max} habits`;
 
       barsHTML += `
@@ -765,7 +763,7 @@
     }
 
     el.innerHTML = `
-      <div class="chart-layout">
+      <div class="chart-body">
         ${metaHTML}
         <div class="chart-center">
           <div class="chart-section-title">This Week's Daily Completion</div>
