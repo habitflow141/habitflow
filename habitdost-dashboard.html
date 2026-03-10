@@ -196,6 +196,25 @@
     .add-habit-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--leaf); }
 
     /* BADGE & TOAST */
+    /* REVIEW POPUP */
+    .review-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 400; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .review-overlay.open { opacity: 1; pointer-events: all; }
+    .review-modal { background: var(--card); border-radius: 24px; padding: 36px 32px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,.2); transform: scale(.92) translateY(20px); transition: transform .35s cubic-bezier(.34,1.56,.64,1); }
+    .review-overlay.open .review-modal { transform: scale(1) translateY(0); }
+    .review-emoji { font-size: 3rem; margin-bottom: 10px; }
+    .review-title { font-size: 1.3rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+    .review-sub { font-size: .88rem; color: var(--muted); margin-bottom: 22px; }
+    .stars-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .star-btn { font-size: 2rem; cursor: pointer; transition: transform .15s; filter: grayscale(1) opacity(.4); }
+    .star-btn.active { filter: none; transform: scale(1.15); }
+    .review-textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: .88rem; font-family: inherit; color: var(--ink); background: var(--bg); resize: none; outline: none; box-sizing: border-box; margin-bottom: 18px; transition: border .2s; }
+    .review-textarea:focus { border-color: var(--teal); }
+    .review-btns { display: flex; gap: 10px; justify-content: center; }
+    .review-submit { background: var(--teal); color: #fff; border: none; border-radius: 50px; padding: 11px 28px; font-size: .92rem; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+    .review-submit:hover { opacity: .88; }
+    .review-skip { background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 50px; padding: 11px 22px; font-size: .88rem; font-weight: 600; cursor: pointer; transition: border .2s; }
+    .review-skip:hover { border-color: var(--teal); color: var(--teal); }
+
     .badge-popup { position: fixed; bottom: 30px; right: 30px; z-index: 300; background: var(--ink); color: #fff; border-radius: 18px; padding: 18px 22px; display: flex; align-items: center; gap: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.3); transform: translateY(120px); opacity: 0; transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s; max-width: 300px; }
     .badge-popup.show { transform: none; opacity: 1; }
     .badge-icon { font-size: 2rem; flex-shrink: 0; }
@@ -378,6 +397,27 @@
   </div>
 
 </main>
+
+<!-- REVIEW POPUP -->
+<div class="review-overlay" id="review-overlay">
+  <div class="review-modal">
+    <div class="review-emoji">🔥</div>
+    <div class="review-title">You're on a 7-Day Streak!</div>
+    <div class="review-sub">Amazing work! How is HabitDost working for you?</div>
+    <div class="stars-row" id="stars-row">
+      <span class="star-btn" data-v="1">⭐</span>
+      <span class="star-btn" data-v="2">⭐</span>
+      <span class="star-btn" data-v="3">⭐</span>
+      <span class="star-btn" data-v="4">⭐</span>
+      <span class="star-btn" data-v="5">⭐</span>
+    </div>
+    <textarea class="review-textarea" id="review-text" rows="3" placeholder="Tell us what you love or what we can improve (optional)..."></textarea>
+    <div class="review-btns">
+      <button class="review-skip" onclick="skipReview()">Maybe Later</button>
+      <button class="review-submit" onclick="submitReview()">Submit Review ✨</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
@@ -650,7 +690,7 @@
   }
   function checkMilestone(streak, name) {
     const m={3:'🌱',7:'🔥',14:'⚡',21:'🎯',30:'💎',60:'👑',100:'🏆'}, l={3:'3 Day Streak!',7:'Week Warrior!',14:'2 Week Champion!',21:'21-Day Habit Lock!',30:'30-Day Legend!',60:'2 Month Master!',100:'Century Club!'};
-    if (m[streak]) { confetti({ particleCount:120, spread:100, origin:{x:.5,y:.5}, colors:['#3ecf8e','#fbbf24','#f472b6','#60a5fa'] }); showBadge(m[streak],l[streak],`${name} — ${streak} days! 🎉`); }
+    if (m[streak]) { confetti({ particleCount:120, spread:100, origin:{x:.5,y:.5}, colors:['#3ecf8e','#fbbf24','#f472b6','#60a5fa'] }); showBadge(m[streak],l[streak],`${name} — ${streak} days! 🎉`); if (streak === 7) showReviewPopup(); }
   }
   function showBadge(icon,title,desc) {
     document.getElementById('badge-icon').textContent=icon; document.getElementById('badge-title').textContent=title; document.getElementById('badge-desc').textContent=desc;
@@ -718,6 +758,52 @@
     document.getElementById('sidebar-overlay').classList.remove('open');
     document.getElementById('hamburger').classList.remove('open');
   }
+
+  // ── REVIEW SYSTEM ──────────────────────────────────────────────────────────
+  let selectedRating = 0;
+
+  function showReviewPopup() {
+    // Only show once per user — check localStorage
+    const key = `hd-reviewed-${currentUser.id}`;
+    if (localStorage.getItem(key)) return;
+    // Delay 1.5s after milestone popup so they don't stack
+    setTimeout(() => {
+      document.getElementById('review-overlay').classList.add('open');
+    }, 1800);
+  }
+
+  // Star click handling
+  document.addEventListener('click', e => {
+    if (!e.target.classList.contains('star-btn')) return;
+    selectedRating = parseInt(e.target.dataset.v);
+    document.querySelectorAll('.star-btn').forEach((s,i) => {
+      s.classList.toggle('active', i < selectedRating);
+    });
+  });
+
+  window.skipReview = function() {
+    document.getElementById('review-overlay').classList.remove('open');
+    // Remind again in 3 days
+    const key = `hd-review-remind-${currentUser.id}`;
+    localStorage.setItem(key, Date.now() + (3 * 24 * 60 * 60 * 1000));
+  };
+
+  window.submitReview = async function() {
+    if (!selectedRating) { showToast('Please select a star rating ⭐'); return; }
+    const text = document.getElementById('review-text').value.trim();
+    // Save to Supabase reviews table
+    await sb.from('reviews').insert({
+      user_id: currentUser.id,
+      rating: selectedRating,
+      review_text: text || null,
+      created_at: new Date().toISOString()
+    });
+    // Mark as reviewed so popup never shows again
+    localStorage.setItem(`hd-reviewed-${currentUser.id}`, '1');
+    document.getElementById('review-overlay').classList.remove('open');
+    showToast('Thank you for your feedback! 🙏');
+    confetti({ particleCount: 80, spread: 70, origin: { x: .5, y: .5 }, colors: ['#3ecf8e','#fbbf24','#f472b6'] });
+  };
 
   init();
 </script>
