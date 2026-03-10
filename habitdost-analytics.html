@@ -548,30 +548,71 @@
     // Show panel with loading state
     panel.classList.add('open');
     listEl.innerHTML = `<div class="day-detail-empty">Loading...</div>`;
-
-    // Scroll panel into view
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    // Fetch which habits were logged on this date
-    const { data: logs } = await sb.from('habit_logs')
-      .select('habit_id')
+    // Step 1: Fetch logs for this date — joined with habit details
+    // We select from habit_logs and join habits (including deleted/inactive ones)
+    const { data: logs } = await sb
+      .from('habit_logs')
+      .select('habit_id, habits(id, name, icon, is_active)')
       .eq('user_id', currentUser.id)
       .eq('completed_date', dateStr);
 
-    const doneIds = new Set((logs || []).map(l => l.habit_id));
+    if (!logs || logs.length === 0) {
+      // No completions that day — show all habits that existed as missed
+      // Fetch ALL habits (active + inactive) to show full picture
+      const { data: allHabits } = await sb
+        .from('habits')
+        .select('id, name, icon, is_active, created_at')
+        .eq('user_id', currentUser.id)
+        .lte('created_at', dateStr + 'T23:59:59');  // only habits that existed on that day
 
-    if (!habits.length) {
-      listEl.innerHTML = `<div class="day-detail-empty">No habits tracked yet.</div>`;
+      if (!allHabits || !allHabits.length) {
+        listEl.innerHTML = `<div class="day-detail-empty">No habits were tracked on this day.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = allHabits.map(h => `
+        <div class="habit-day-item">
+          <div class="habit-day-icon">${h.icon || '🎯'}</div>
+          <div class="habit-day-name">${h.name}${!h.is_active ? ' <span style="font-size:.72rem;color:var(--muted)">(deleted)</span>' : ''}</div>
+          <div class="habit-day-status status-missed">❌ Missed</div>
+        </div>`).join('');
       return;
     }
 
-    // Build list — show all habits, mark done or missed
-    listEl.innerHTML = habits.map(h => {
-      const done = doneIds.has(h.id);
+    // Step 2: We have completions — show only the habits that were DONE that day
+    // These are the exact habits completed regardless of whether deleted later
+    const completedHabits = logs.map(l => l.habits).filter(Boolean);
+
+    if (!completedHabits.length) {
+      listEl.innerHTML = `<div class="day-detail-empty">Could not load habit details.</div>`;
+      return;
+    }
+
+    // Also fetch all habits that existed on that day to show missed ones too
+    const { data: allHabits } = await sb
+      .from('habits')
+      .select('id, name, icon, is_active, created_at')
+      .eq('user_id', currentUser.id)
+      .lte('created_at', dateStr + 'T23:59:59');
+
+    const completedIds = new Set(completedHabits.map(h => h.id));
+    const allThatDay = allHabits || [];
+
+    // Show completed ones first (✅), then missed ones (❌)
+    const sorted = [
+      ...allThatDay.filter(h => completedIds.has(h.id)),
+      ...allThatDay.filter(h => !completedIds.has(h.id))
+    ];
+
+    listEl.innerHTML = sorted.map(h => {
+      const done = completedIds.has(h.id);
+      const deletedTag = !h.is_active ? ' <span style="font-size:.72rem;color:var(--muted)">(deleted)</span>' : '';
       return `
         <div class="habit-day-item">
           <div class="habit-day-icon">${h.icon || '🎯'}</div>
-          <div class="habit-day-name">${h.name}</div>
+          <div class="habit-day-name">${h.name}${deletedTag}</div>
           <div class="habit-day-status ${done ? 'status-done' : 'status-missed'}">
             ${done ? '✅ Done' : '❌ Missed'}
           </div>
