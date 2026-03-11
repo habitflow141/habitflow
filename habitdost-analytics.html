@@ -206,8 +206,8 @@
     }
 
     /* STREAK CARD MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity .2s; backdrop-filter: blur(8px); }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); align-items: center; justify-content: center; z-index: 300; transition: opacity .2s; backdrop-filter: blur(8px); }
+    .modal-overlay.open { display: flex; opacity: 1; pointer-events: all; }
     .modal { background: var(--card); border-radius: 28px; padding: 36px; width: 100%; max-width: 480px; margin: 20px; transform: scale(.9); transition: transform .3s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 32px 100px rgba(0,0,0,.2); }
     .modal-overlay.open .modal { transform: scale(1); }
     .modal h2 { font-family: 'Lora', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 6px; }
