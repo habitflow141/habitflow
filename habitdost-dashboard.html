@@ -349,6 +349,16 @@
         <button class="btn-dismiss" onclick="document.getElementById('notif-banner').classList.add('hidden')">Not now</button>
       </div>
     </div>
+    <div class="notif-banner hidden" id="renewal-banner" style="background:linear-gradient(135deg,#78350f,#b45309);">
+      <div class="notif-banner-left">
+        <div class="bell">⚡</div>
+        <div><h3>Pro Plan Expiring Soon</h3><p id="renewal-msg">Your plan is expiring soon. Renew to keep access.</p></div>
+      </div>
+      <div class="notif-banner-btns">
+        <button class="btn-allow" onclick="window.location.href='habitdost-upgrade.html'">Renew Now</button>
+        <button class="btn-dismiss" onclick="document.getElementById('renewal-banner').classList.add('hidden')">Dismiss</button>
+      </div>
+    </div>
     <div class="stats-row">
       <div class="stat-card highlight"><div class="s-label">🔥 Best Streak</div><div class="s-value" id="stat-streak">0</div><div class="s-sub">days in a row</div></div>
       <div class="stat-card"><div class="s-label">✅ Today</div><div class="s-value" id="stat-today">0/0</div><div class="s-sub">habits done</div></div>
@@ -491,7 +501,7 @@
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     // Load profile first (awaited so userPlan is set before habits render)
-    const { data: p } = await sb.from('profiles').select('theme, full_name, plan').eq('id', currentUser.id).single();
+    const { data: p } = await sb.from('profiles').select('theme, full_name, plan, subscription_end_date, cancel_at_period_end').eq('id', currentUser.id).single();
     if (p?.theme) {
       document.body.setAttribute('data-theme', p.theme);
       localStorage.setItem('hf-theme', p.theme);
@@ -503,12 +513,49 @@
     }
     if (p?.plan) {
       userPlan = p.plan;
+      const subEndDate = p.subscription_end_date || null;
+      const cancelAtEnd = p.cancel_at_period_end || false;
       const planEl = document.querySelector('.user-plan');
+
+      // ── Auto-downgrade if subscription expired + 2 grace days ────────────
+      if ((userPlan === 'pro' || userPlan === 'pro_annual') && subEndDate) {
+        const endDate = new Date(subEndDate);
+        const now = new Date();
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const daysPastEnd = Math.floor((now - endDate) / msPerDay);
+        if (cancelAtEnd && daysPastEnd >= 2) {
+          // Grace period over — downgrade to free silently
+          await sb.from('profiles').update({ plan: 'free', cancel_at_period_end: false }).eq('id', currentUser.id);
+          userPlan = 'free';
+        }
+      }
+
       if (planEl) {
-        if (userPlan === 'pro') {
-          planEl.textContent = '✨ Pro Plan';
+        if (userPlan === 'pro' || userPlan === 'pro_annual') {
+          planEl.textContent = userPlan === 'pro_annual' ? '✨ Pro Annual' : '✨ Pro Plan';
+
+          // ── Show renewal banner if within 7 days of end date ─────────────
+          if (subEndDate && !cancelAtEnd) {
+            const endDate = new Date(subEndDate);
+            const now = new Date();
+            const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+            if (daysLeft <= 7 && daysLeft >= 0) {
+              const renewalBanner = document.getElementById('renewal-banner');
+              const renewalMsg = document.getElementById('renewal-msg');
+              if (renewalBanner) renewalBanner.classList.remove('hidden');
+              if (renewalMsg) renewalMsg.textContent = `Your Pro plan expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} on ${endDate.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}. Renew now to keep your streak going!`;
+            }
+          }
+          // Show cancellation notice if scheduled
+          if (cancelAtEnd && subEndDate) {
+            const endDate = new Date(subEndDate);
+            const renewalBanner = document.getElementById('renewal-banner');
+            const renewalMsg = document.getElementById('renewal-msg');
+            if (renewalBanner) { renewalBanner.classList.remove('hidden'); renewalBanner.style.background = 'linear-gradient(135deg,#7f1d1d,#991b1b)'; }
+            if (renewalMsg) renewalMsg.textContent = `Your Pro plan is cancelled and will end on ${endDate.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}. Renew before then to keep Pro access.`;
+          }
         } else {
-          // Calculate trial days left
+          // Free plan — show trial info
           const joinDate = new Date(currentUser.created_at);
           const nowDate = new Date();
           const daysSinceJoin = Math.floor((nowDate - joinDate) / (1000 * 60 * 60 * 24));

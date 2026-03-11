@@ -320,7 +320,10 @@
         <div id="plan-name" style="font-size:1rem;font-weight:700;color:var(--ink)">Free Plan</div>
         <div id="plan-desc" style="font-size:.78rem;color:var(--muted);margin-top:3px">3 habits max · Ads shown · Basic features</div>
       </div>
-      <a href="habitdost-upgrade.html" class="save-btn" id="upgrade-btn" style="text-decoration:none;display:inline-block">Upgrade to Pro →</a>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="habitdost-upgrade.html" class="save-btn" id="upgrade-btn" style="text-decoration:none;display:inline-block">Upgrade to Pro →</a>
+        <button class="danger-btn" id="cancel-plan-btn" onclick="cancelPlan()" style="display:none;">Cancel Plan</button>
+      </div>
     </div>
   </div>
 
@@ -385,18 +388,35 @@
 
     // Step 3: Load from DB (bonus — overwrites if found)
     try {
-      const { data: p, error } = await sb.from('profiles').select('plan, theme, full_name').eq('id', currentUser.id).single();
+      const { data: p, error } = await sb.from('profiles').select('plan, theme, full_name, subscription_end_date, cancel_at_period_end').eq('id', currentUser.id).single();
       if (error) console.error('Profile error:', error);
       if (p) {
         if (p.full_name) setName(p.full_name);
         const plan = p.plan || 'free';
+        const subEndDate = p.subscription_end_date || null;
+        const cancelAtEnd = p.cancel_at_period_end || false;
         document.getElementById('nav-plan').textContent = plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
         userPlan = plan;
-        if (plan === 'pro') {
-          document.getElementById('plan-name').textContent = '✨ Pro Plan — Active';
-          document.getElementById('plan-desc').textContent = 'Unlimited habits · No ads · Full analytics';
+        if (plan === 'pro' || plan === 'pro_annual') {
+          const isPro = plan === 'pro';
+          const endFmt = subEndDate ? new Date(subEndDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : null;
+          const statusNote = cancelAtEnd
+            ? `⚠️ Cancels on ${endFmt} — access until then`
+            : endFmt ? `Renews on ${endFmt}` : '';
+          document.getElementById('plan-name').textContent = isPro ? '✨ Pro Monthly — Active' : '✨ Pro Annual — Active';
+          document.getElementById('plan-desc').textContent = isPro
+            ? `Unlimited habits · No ads · Full analytics · 3 rest days/month${statusNote ? ' · ' + statusNote : ''}`
+            : `All Pro features · 5 rest days/month · Streak card${statusNote ? ' · ' + statusNote : ''}`;
           const btn = document.getElementById('upgrade-btn');
-          if (btn) btn.textContent = 'Manage Plan';
+          if (btn) btn.style.display = 'none';
+          const cancelBtn = document.getElementById('cancel-plan-btn');
+          if (cancelBtn) {
+            cancelBtn.style.display = 'inline-block';
+            if (cancelAtEnd) {
+              cancelBtn.textContent = 'Cancellation Scheduled';
+              cancelBtn.disabled = true;
+            }
+          }
         }
         if (p.theme) applyTheme(p.theme, false);
 
@@ -542,6 +562,22 @@
     await sb.auth.signOut();
     window.location.replace(window.location.origin + '/habitdost-auth.html');
   }
+
+  async function cancelPlan() {
+    const planLabel = userPlan === 'pro_annual' ? 'Pro Annual' : 'Pro Monthly';
+    const confirmed = confirm(`Cancel your ${planLabel} plan?\n\nYou will keep full Pro access until your subscription end date. After that, your account will be downgraded to Free.\n\nRefunds are only available within 7 days of purchase. Contact habitflow141@gmail.com for refund requests.`);
+    if (!confirmed) return;
+
+    showToast('Scheduling cancellation...');
+    const { error } = await sb.from('profiles').update({ cancel_at_period_end: true }).eq('id', currentUser.id);
+    if (error) {
+      showToast('❌ Something went wrong. Please contact support.');
+      return;
+    }
+    showToast('✅ Cancellation scheduled. You keep Pro access until your end date.');
+    setTimeout(() => window.location.reload(), 2500);
+  }
+
   init();
 </script>
 </body>
