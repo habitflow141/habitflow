@@ -533,6 +533,8 @@
       if (planEl) {
         if (userPlan === 'pro' || userPlan === 'pro_annual') {
           planEl.textContent = userPlan === 'pro_annual' ? '✨ Pro Annual' : '✨ Pro Plan';
+          const upgradeLink = document.querySelector('.nav-item[href="habitdost-upgrade.html"]');
+          if (upgradeLink) upgradeLink.style.display = 'none';
 
           // ── Show renewal banner if within 7 days of end date ─────────────
           if (subEndDate && !cancelAtEnd) {
@@ -694,7 +696,7 @@
     // Show free plan limit warning
     const addBtn = document.querySelector('.add-habit-btn[onclick="openModal()"]');
     if (addBtn) {
-      if (userPlan !== 'pro' && habits.length >= 3) {
+      if (userPlan !== 'pro' && userPlan !== 'pro_annual' && habits.length >= 3) {
         addBtn.textContent = '🔒 Upgrade for More Habits';
         addBtn.style.opacity = '0.7';
         addBtn.onclick = () => { showToast('⭐ Free plan allows 3 habits — upgrade to Pro!'); setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000); };
@@ -738,7 +740,7 @@
     const time = document.getElementById(`rt-${id}`).value;
     if (!time) return showToast('Please pick a time first');
     // 🔒 Free plan: only 1 reminder allowed
-    if (userPlan !== 'pro') {
+    if (userPlan !== 'pro' && userPlan !== 'pro_annual') {
       const existingReminders = habits.filter(h => h.reminder_time && h.id !== id);
       if (existingReminders.length >= 1) {
         showToast('🔒 Free plan allows 1 reminder — upgrade to Pro for unlimited!');
@@ -826,7 +828,7 @@
     const name=document.getElementById('habit-name-input').value.trim();
     if (!name) return showToast('Please enter a habit name');
     // 🔒 Free plan limit: max 3 habits
-    if (userPlan !== 'pro' && habits.length >= 3) {
+    if (userPlan !== 'pro' && userPlan !== 'pro_annual' && habits.length >= 3) {
       window.closeModal();
       showToast('⭐ Free plan allows 3 habits — upgrade to Pro for unlimited!');
       setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
