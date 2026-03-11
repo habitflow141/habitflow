@@ -233,9 +233,11 @@
           <li><span class="tick">✓</span> Up to 3 habits</li>
           <li><span class="tick">✓</span> Basic streak counter</li>
           <li><span class="tick">✓</span> 1 daily reminder</li>
-          <li class="off"><span class="cross">✕</span> Analytics & heatmap</li>
-          <li class="off"><span class="cross">✕</span> Ad-free experience</li>
+          <li><span class="tick">✓</span> Forest theme only</li>
+          <li class="off"><span class="cross">✕</span> Analytics &amp; heatmap</li>
           <li class="off"><span class="cross">✕</span> Custom themes</li>
+          <li class="off"><span class="cross">✕</span> Rest days</li>
+          <li class="off"><span class="cross">✕</span> Ad-free experience</li>
         </ul>
         <button class="pay-btn pay-btn-outline" id="free-btn" onclick="window.location.href='habitdost-dashboard.html'">Current Plan</button>
       </div>
@@ -249,13 +251,15 @@
         <div class="p-divider"></div>
         <ul class="p-features">
           <li><span class="tick">✓</span> Unlimited habits</li>
-          <li><span class="tick">✓</span> Full streak system + badges</li>
+          <li><span class="tick">✓</span> Full streak system</li>
           <li><span class="tick">✓</span> Unlimited reminders</li>
-          <li><span class="tick">✓</span> Analytics & heatmap</li>
+          <li><span class="tick">✓</span> Full analytics &amp; heatmap</li>
+          <li><span class="tick">✓</span> All 5 custom themes</li>
+          <li><span class="tick">✓</span> 3 rest days/month</li>
+          <li><span class="tick">✓</span> CSV export</li>
           <li><span class="tick">✓</span> Zero ads, always</li>
-          <li><span class="tick">✓</span> 5 custom themes</li>
         </ul>
-        <button class="pay-btn pay-btn-filled" id="btn-monthly" onclick="startPayment('monthly')">Start 7-Day Free Trial</button>
+        <button class="pay-btn pay-btn-filled" id="btn-monthly" onclick="startPayment('monthly')">Upgrade to Pro — ₹99/mo</button>
       </div>
 
       <!-- PRO ANNUAL -->
@@ -266,16 +270,16 @@
         <div class="p-divider"></div>
         <ul class="p-features">
           <li><span class="tick">✓</span> Everything in Pro Monthly</li>
+          <li><span class="tick">✓</span> 5 rest days/month</li>
           <li><span class="tick">✓</span> Shareable streak card</li>
-          <li><span class="tick">✓</span> CSV & PDF export</li>
-          <li><span class="tick">✓</span> Early access to new features</li>
+          <li><span class="tick">✓</span> CSV &amp; PDF export</li>
           <li><span class="tick">✓</span> Priority support</li>
           <li><span class="tick">✓</span> Best value 🇮🇳</li>
         </ul>
         <button class="pay-btn pay-btn-filled annual" id="btn-annual" onclick="startPayment('annual')">Get Annual Deal — ₹799</button>
       </div>
 
-      <!-- PRO ANNUAL (shown in grid when annual toggle on) -->
+      <!-- PRO ANNUAL always-visible -->
       <div class="p-card" id="card-annual-always">
         <div class="p-plan">Pro Annual</div>
         <div class="p-price"><sup>₹</sup>799<sub>/yr</sub></div>
@@ -283,9 +287,9 @@
         <div class="p-divider"></div>
         <ul class="p-features">
           <li><span class="tick">✓</span> Everything in Pro Monthly</li>
+          <li><span class="tick">✓</span> 5 rest days/month</li>
           <li><span class="tick">✓</span> Shareable streak card</li>
-          <li><span class="tick">✓</span> CSV & PDF export</li>
-          <li><span class="tick">✓</span> Early access to features</li>
+          <li><span class="tick">✓</span> CSV &amp; PDF export</li>
           <li><span class="tick">✓</span> Priority support</li>
           <li><span class="tick">✓</span> Best value 🇮🇳</li>
         </ul>
@@ -302,10 +306,7 @@
       <div class="faq-q" onclick="toggleFaq(this)">Can I cancel anytime? <span class="arrow">▼</span></div>
       <div class="faq-a">Yes, absolutely. Cancel your Pro subscription anytime from your account settings. You keep Pro access until the end of your billing period — no sudden cutoffs.</div>
     </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">Can I cancel my Pro plan anytime? <span class="arrow">▼</span></div>
-      <div class="faq-a">Yes — you can cancel anytime. Your Pro features stay active until the end of your billing period.</div>
-    </div>
+
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">What payment methods are accepted? <span class="arrow">▼</span></div>
       <div class="faq-a">All major Indian payment methods — UPI (GPay, PhonePe, Paytm), debit cards, credit cards, and net banking. Powered by Razorpay.</div>
@@ -420,7 +421,7 @@
 
     async function handlePaymentSuccess(response, plan) {
       // Update user plan in Supabase
-      await sb.from('profiles').update({ plan: 'pro' }).eq('id', currentUser.id);
+      await sb.from('profiles').update({ plan: plan === 'annual' ? 'pro_annual' : 'pro' }).eq('id', currentUser.id);
 
       // Save payment record
       await sb.from('payments').upsert({
