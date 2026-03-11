@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitDost — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0f0d;
+      --card: #111814;
+      --border: #1e2d25;
+      --ink: #e8f5ee;
+      --muted: #6b9b7e;
+      --teal: #0d9488;
+      --mint: #3ecf8e;
+      --red: #ef4444;
+      --red-bg: #1c0a0a;
+      --red-border: #3b1212;
+      --gold: #f59e0b;
+      --gold-bg: #1c1500;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 20px; }
+
+    /* LOGIN GATE */
+    #login-gate { width: 100%; max-width: 400px; margin-top: 80px; }
+    .admin-logo { font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 700; color: var(--mint); text-align: center; margin-bottom: 8px; }
+    .admin-sub { text-align: center; font-size: .82rem; color: var(--muted); margin-bottom: 36px; }
+    .login-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; }
+    .login-card h2 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .login-card p { font-size: .78rem; color: var(--muted); margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: .75rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+    .field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--ink); font-family: inherit; font-size: .88rem; outline: none; transition: border-color .2s; }
+    .field input:focus { border-color: var(--teal); }
+    .btn-login { width: 100%; padding: 13px; background: var(--teal); color: #fff; border: none; border-radius: 50px; font-family: inherit; font-size: .9rem; font-weight: 700; cursor: pointer; transition: background .2s; margin-top: 4px; }
+    .btn-login:hover { background: #0a7a70; }
+    .login-err { font-size: .78rem; color: var(--red); margin-top: 10px; text-align: center; min-height: 18px; }
+
+    /* MAIN PANEL */
+    #admin-panel { display: none; width: 100%; max-width: 720px; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+    .panel-title { font-family: 'Lora', serif; font-size: 1.5rem; color: var(--mint); }
+    .panel-title span { font-size: .72rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--muted); font-weight: 500; display: block; margin-top: 2px; }
+    .logout-link { font-size: .78rem; color: var(--muted); cursor: pointer; text-decoration: underline; }
+    .logout-link:hover { color: var(--red); }
+
+    /* SECTION */
+    .section { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 20px; }
+    .section h3 { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 18px; }
+
+    /* SEARCH */
+    .search-row { display: flex; gap: 10px; }
+    .search-row input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--ink); font-family: inherit; font-size: .88rem; outline: none; transition: border-color .2s; }
+    .search-row input:focus { border-color: var(--teal); }
+    .btn-search { padding: 11px 22px; background: var(--teal); color: #fff; border: none; border-radius: 10px; font-family: inherit; font-size: .88rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .btn-search:hover { background: #0a7a70; }
+    .btn-search:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* USER CARD */
+    .user-card { margin-top: 20px; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: none; }
+    .user-card.visible { display: block; }
+    .user-row { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .user-info h4 { font-size: .95rem; font-weight: 700; color: var(--ink); }
+    .user-info p { font-size: .78rem; color: var(--muted); margin-top: 3px; }
+    .plan-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 50px; font-size: .72rem; font-weight: 700; margin-top: 8px; }
+    .plan-badge.free { background: var(--border); color: var(--muted); }
+    .plan-badge.pro { background: rgba(13,148,136,.2); color: var(--mint); border: 1px solid rgba(13,148,136,.3); }
+    .plan-badge.pro_annual { background: rgba(245,158,11,.15); color: var(--gold); border: 1px solid rgba(245,158,11,.25); }
+    .user-actions { display: flex; flex-direction: column; gap: 8px; }
+    .btn-revoke { padding: 10px 20px; background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); border-radius: 50px; font-family: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .btn-revoke:hover { background: var(--red); color: #fff; }
+    .btn-revoke:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-grant { padding: 10px 20px; background: rgba(13,148,136,.1); color: var(--mint); border: 1px solid rgba(13,148,136,.2); border-radius: 50px; font-family: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .btn-grant:hover { background: var(--teal); color: #fff; }
+    .sub-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; }
+    .sub-item { font-size: .75rem; color: var(--muted); }
+    .sub-item span { color: var(--ink); font-weight: 600; display: block; margin-top: 2px; }
+
+    /* LOG */
+    .log-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+    .log-item { font-size: .78rem; color: var(--muted); padding: 8px 12px; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--border); }
+    .log-item.success { border-left-color: var(--mint); color: var(--ink); }
+    .log-item.error { border-left-color: var(--red); }
+    .log-item time { font-size: .68rem; color: var(--muted); float: right; }
+    .log-empty { font-size: .78rem; color: var(--muted); text-align: center; padding: 20px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--card); border: 1px solid var(--border); color: var(--ink); padding: 11px 22px; border-radius: 50px; font-size: .84rem; font-weight: 600; z-index: 400; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div id="login-gate">
+  <div class="admin-logo">⚙ HabitDost Admin</div>
+  <div class="admin-sub">Restricted access — owner only</div>
+  <div class="login-card">
+    <h2>Admin Login</h2>
+    <p>Enter your admin credentials to continue</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="habitflow141@gmail.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-login" onclick="doLogin()">Login →</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="panel-header">
+    <div class="panel-title">
+      Admin Panel
+      <span>Logged in as <span id="admin-email-display"></span></span>
+    </div>
+    <span class="logout-link" onclick="doLogout()">Logout</span>
+  </div>
+
+  <!-- USER LOOKUP -->
+  <div class="section">
+    <h3>🔍 User Lookup & Plan Control</h3>
+    <div class="search-row">
+      <input type="email" id="search-email" placeholder="Enter user email address..." onkeydown="if(event.key==='Enter')searchUser()" />
+      <button class="btn-search" id="search-btn" onclick="searchUser()">Search</button>
+    </div>
+
+    <div class="user-card" id="user-card">
+      <div class="user-row">
+        <div class="user-info">
+          <h4 id="u-name">—</h4>
+          <p id="u-email">—</p>
+          <div class="plan-badge free" id="u-plan-badge">Free</div>
+        </div>
+        <div class="user-actions">
+          <button class="btn-revoke" id="btn-revoke" onclick="revokePlan()">🚫 Revoke Plan → Free</button>
+          <button class="btn-grant" id="btn-grant-pro" onclick="grantPlan('pro')">✅ Grant Pro Monthly</button>
+          <button class="btn-grant" id="btn-grant-annual" onclick="grantPlan('pro_annual')">⭐ Grant Pro Annual</button>
+        </div>
+      </div>
+      <div class="sub-detail">
+        <div class="sub-item">Subscription End<span id="u-end-date">—</span></div>
+        <div class="sub-item">Cancel at End<span id="u-cancel-flag">—</span></div>
+        <div class="sub-item">Joined<span id="u-joined">—</span></div>
+        <div class="sub-item">User ID<span id="u-id" style="font-size:.65rem;word-break:break-all;max-width:180px">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION LOG -->
+  <div class="section">
+    <h3>📋 Action Log</h3>
+    <div class="log-list" id="log-list">
+      <div class="log-empty">No actions yet this session</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
+  const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
+  const { createClient } = supabase;
+  const sb = createClient(SB_URL, SB_KEY);
+
+  // ── ADMIN EMAIL — only this account can access ────────────────────────────
+  const ADMIN_EMAIL = 'habitflow141@gmail.com';
+
+  let foundUserId = null;
+  let logEntries = [];
+
+  // ── CHECK SESSION ON LOAD ─────────────────────────────────────────────────
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user.email === ADMIN_EMAIL) {
+      showPanel(session.user.email);
+    }
+  }
+
+  // ── LOGIN ─────────────────────────────────────────────────────────────────
+  async function doLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl    = document.getElementById('login-err');
+    errEl.textContent = '';
+
+    if (email !== ADMIN_EMAIL) {
+      errEl.textContent = '⛔ Access denied — not an admin account.';
+      return;
+    }
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error || !data.user) {
+      errEl.textContent = '❌ ' + (error?.message || 'Login failed');
+      return;
+    }
+    if (data.user.email !== ADMIN_EMAIL) {
+      await sb.auth.signOut();
+      errEl.textContent = '⛔ Access denied.';
+      return;
+    }
+    showPanel(data.user.email);
+  }
+
+  function showPanel(email) {
+    document.getElementById('login-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('admin-email-display').textContent = email;
+  }
+
+  async function doLogout() {
+    await sb.auth.signOut();
+    window.location.reload();
+  }
+
+  // ── SEARCH USER ───────────────────────────────────────────────────────────
+  async function searchUser() {
+    const email = document.getElementById('search-email').value.trim().toLowerCase();
+    if (!email) return showToast('Enter an email address');
+
+    const btn = document.getElementById('search-btn');
+    btn.disabled = true; btn.textContent = 'Searching...';
+
+    // Search auth users via profiles table (email stored in auth, we join via id)
+    // We use a service-level workaround: search profiles by email stored in auth.users
+    // Since we only have anon key, we search profiles and match via stored email in profiles
+    const { data, error } = await sb
+      .from('profiles')
+      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, created_at')
+      .eq('email', email)
+      .maybeSingle();
+
+    btn.disabled = false; btn.textContent = 'Search';
+
+    if (error) { showToast('❌ Error: ' + error.message); return; }
+    if (!data) { showToast('⚠️ No user found with that email'); document.getElementById('user-card').classList.remove('visible'); return; }
+
+    foundUserId = data.id;
+    renderUserCard(data);
+  }
+
+  function renderUserCard(d) {
+    document.getElementById('u-name').textContent     = d.full_name || '(no name)';
+    document.getElementById('u-email').textContent    = d.email || '—';
+    document.getElementById('u-joined').textContent   = d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN') : '—';
+    document.getElementById('u-end-date').textContent = d.subscription_end_date || 'Not set';
+    document.getElementById('u-cancel-flag').textContent = d.cancel_at_period_end ? 'Yes ⚠️' : 'No';
+    document.getElementById('u-id').textContent       = d.id;
+
+    const badge = document.getElementById('u-plan-badge');
+    badge.className = 'plan-badge ' + (d.plan || 'free');
+    badge.textContent = d.plan === 'pro' ? '✨ Pro Monthly' : d.plan === 'pro_annual' ? '⭐ Pro Annual' : '🌱 Free';
+
+    // Disable revoke if already free
+    document.getElementById('btn-revoke').disabled = (d.plan === 'free');
+
+    document.getElementById('user-card').classList.add('visible');
+  }
+
+  // ── REVOKE PLAN ───────────────────────────────────────────────────────────
+  async function revokePlan() {
+    if (!foundUserId) return;
+    const confirmed = confirm('Revoke this user\'s plan and downgrade to Free immediately?\n\nOnly do this after you have issued a refund.');
+    if (!confirmed) return;
+
+    const { error } = await sb.from('profiles').update({
+      plan: 'free',
+      subscription_end_date: null,
+      cancel_at_period_end: false
+    }).eq('id', foundUserId);
+
+    if (error) { showToast('❌ Error: ' + error.message); addLog('❌ Revoke failed: ' + error.message, 'error'); return; }
+
+    showToast('✅ Plan revoked — user downgraded to Free');
+    addLog(`✅ Revoked plan for ${document.getElementById('u-email').textContent}`, 'success');
+    // Refresh card
+    document.getElementById('u-plan-badge').className = 'plan-badge free';
+    document.getElementById('u-plan-badge').textContent = '🌱 Free';
+    document.getElementById('u-end-date').textContent = 'Not set';
+    document.getElementById('u-cancel-flag').textContent = 'No';
+    document.getElementById('btn-revoke').disabled = true;
+  }
+
+  // ── GRANT PLAN ────────────────────────────────────────────────────────────
+  async function grantPlan(plan) {
+    if (!foundUserId) return;
+    const label = plan === 'pro_annual' ? 'Pro Annual' : 'Pro Monthly';
+    const confirmed = confirm(`Grant ${label} to this user?`);
+    if (!confirmed) return;
+
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + (plan === 'pro_annual' ? 365 : 30));
+    const endDateStr = endDate.toISOString().split('T')[0];
+
+    const { error } = await sb.from('profiles').update({
+      plan: plan,
+      subscription_end_date: endDateStr,
+      cancel_at_period_end: false
+    }).eq('id', foundUserId);
+
+    if (error) { showToast('❌ Error: ' + error.message); addLog('❌ Grant failed: ' + error.message, 'error'); return; }
+
+    showToast(`✅ ${label} granted until ${endDateStr}`);
+    addLog(`✅ Granted ${label} to ${document.getElementById('u-email').textContent} until ${endDateStr}`, 'success');
+    document.getElementById('u-plan-badge').className = 'plan-badge ' + plan;
+    document.getElementById('u-plan-badge').textContent = plan === 'pro_annual' ? '⭐ Pro Annual' : '✨ Pro Monthly';
+    document.getElementById('u-end-date').textContent = endDateStr;
+    document.getElementById('btn-revoke').disabled = false;
+  }
+
+  // ── LOG ───────────────────────────────────────────────────────────────────
+  function addLog(msg, type = '') {
+    const now = new Date().toLocaleTimeString('en-IN');
+    logEntries.unshift({ msg, type, time: now });
+    const list = document.getElementById('log-list');
+    list.innerHTML = logEntries.map(e =>
+      `<div class="log-item ${e.type}">${e.msg}<time>${e.time}</time></div>`
+    ).join('');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  init();
+</script>
+</body>
+</html>
