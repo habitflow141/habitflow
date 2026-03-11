@@ -553,9 +553,9 @@
   }
 
   async function clearAllHabits() {
-    if (!confirm('Delete ALL your habits and logs? This cannot be undone.')) return;
+    if (!confirm('This will hide all your habits from your dashboard.\n\nYour logs and streak history are kept safe. Contact habitflow141@gmail.com if you want them restored.')) return;
     await sb.from('habits').update({ is_active: false }).eq('user_id', currentUser.id);
-    showToast('All habits cleared');
+    showToast('All habits cleared. Contact support to restore them.');
   }
 
   async function deleteAccount() {
