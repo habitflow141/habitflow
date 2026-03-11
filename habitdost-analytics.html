@@ -322,7 +322,7 @@
     </div>
     <div class="header-btns">
       <button class="btn-export csv" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="btn-export share" id="streak-card-btn" onclick="openStreakCard()" style="display:none;">🃏 Share Streak Card</button>
+      <button class="btn-export csv" onclick="openStreakCard()">🃏 Share Streak Card</button>
     </div>
   </div>
 
@@ -452,9 +452,7 @@
     const { data: profile } = await sb.from('profiles').select('plan, full_name').eq('id', currentUser.id).single();
     userPlan = profile?.plan || 'free';
     document.getElementById('nav-plan').textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
-    // Streak card: Annual only — hidden for free and pro monthly
-    const scBtn = document.getElementById('streak-card-btn');
-    if (scBtn) scBtn.style.display = (userPlan === 'pro_annual') ? 'inline-flex' : 'none';
+
 
     await loadData();
 
@@ -883,9 +881,9 @@
 
   // ── STREAK CARD ──
   function openStreakCard() {
-    // 🔒 Shareable streak card is Annual Pro only
+    // 🔒 Annual Pro only — same lock pattern as CSV
     if (userPlan !== 'pro_annual') {
-      showToast('🔒 Streak card sharing is an Annual Pro feature — upgrade to unlock!');
+      showToast('🔒 Streak Card is an Annual Pro feature — upgrade to unlock!');
       setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
       return;
     }
