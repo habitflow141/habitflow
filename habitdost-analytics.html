@@ -175,8 +175,8 @@
     .chart-meta-label { font-size: .58rem; color: var(--muted); margin-top: 1px; line-height: 1.2; }
     .chart-meta-value { font-size: 1rem; font-weight: 800; color: var(--ink); line-height: 1; }
     .chart-center { flex: 1; min-width: 0; }
-    .chart-box { background: #fff; border: 1.5px solid #dde8e2; border-radius: 14px; padding: 12px 10px 8px 6px; }
-    .chart-inner { display: flex; align-items: stretch; height: 200px; }
+    .chart-box { background: #fff; border: 1.5px solid #dde8e2; border-radius: 14px; padding: 12px 10px 8px 6px; overflow: hidden; }
+    .chart-inner { display: flex; align-items: stretch; height: 200px; overflow: hidden; }
     .chart-yaxis { display: flex; flex-direction: column-reverse; justify-content: space-between; width: 20px; flex-shrink: 0; padding-bottom: 28px; }
     .chart-yaxis-lbl { font-size: .57rem; font-weight: 700; color: #bbb; text-align: right; padding-right: 3px; line-height: 1; }
     .chart-plot { flex: 1; position: relative; min-width: 0; }
@@ -437,13 +437,14 @@
 
     const { data: profile } = await sb.from('profiles').select('plan, full_name').eq('id', currentUser.id).single();
     userPlan = profile?.plan || 'free';
-    document.getElementById('nav-plan').textContent = userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
+    document.getElementById('nav-plan').textContent = userPlan === 'pro_annual' ? '✨ Pro Annual' : userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
 
 
     await loadData();
 
     // 🔒 Plan enforcement
-    if (userPlan !== 'pro') {
+    const isPaidPlan = userPlan === 'pro' || userPlan === 'pro_annual';
+    if (!isPaidPlan) {
       // Calculate days since user joined
       const joinDate = new Date(currentUser.created_at);
       const todayDate = new Date(today + 'T12:00:00');
@@ -764,7 +765,7 @@
       const isFull  = !isFuture && count >= max && count > 0;
       const hasData = !isFuture && count > 0;
       // Height: each habit unit = (100/max)% of chart height
-      const chartH = 144; // px available for bars (200px total - 28px label space - 28px padding)
+      const chartH = 155; // px available for bars safely within chart-inner
       const barH = isFuture ? 4 : hasData ? Math.max(Math.round((count/max)*chartH), 8) : 4;
       const barClass = isFull ? 'full' : hasData ? 'has-data' : isFuture ? 'future' : '';
       const activeStyle = isToday ? 'outline:2px solid var(--teal);outline-offset:1px;' : '';
@@ -851,7 +852,7 @@
 
   // ── EXPORT CSV ──
   function exportCSV() {
-    if (userPlan !== 'pro') {
+    if (userPlan !== 'pro' && userPlan !== 'pro_annual') {
       showToast('🔒 CSV export is a Pro feature — upgrade to unlock!');
       setTimeout(() => { window.location.href = 'habitdost-upgrade.html'; }, 2000);
       return;
