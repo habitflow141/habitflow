@@ -337,6 +337,13 @@
     </div>
   </div>
 
+  <!-- LOG OUT -->
+  <div class="settings-section">
+    <h2>👋 Log Out</h2>
+    <div class="s-desc">You'll be returned to the login page. Your data stays safe.</div>
+    <button onclick="handleLogout()" style="padding:11px 28px;background:#fff;color:var(--teal);border:1.5px solid var(--teal);border-radius:50px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--teal)';this.style.color='#fff';" onmouseout="this.style.background='#fff';this.style.color='var(--teal)';">↪ Log Out</button>
+  </div>
+
   <!-- DANGER ZONE -->
   <div class="settings-section">
     <h2>⚠️ Danger Zone</h2>
@@ -552,10 +559,19 @@
   }
 
   async function deleteAccount() {
-    if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
-    if (!confirm('Final confirmation — delete account?')) return;
-    await sb.auth.signOut();
-    window.location.replace(window.location.origin + '/habitdost-auth.html');
+    if (!confirm('Are you sure you want to delete your account?\n\nYour data will be kept for 30 days. If you change your mind, contact habitflow141@gmail.com within 30 days to restore your account.\n\nAfter 30 days, all data is permanently deleted.')) return;
+    if (!confirm('Final confirmation — delete your account?')) return;
+    try {
+      const deletedAt = new Date().toISOString();
+      await sb.from('profiles').update({ deleted_at: deletedAt }).eq('id', currentUser.id);
+      showToast('Account scheduled for deletion. Contact us within 30 days to restore.');
+      setTimeout(async () => {
+        await sb.auth.signOut();
+        window.location.replace(window.location.origin + '/habitdost-auth.html');
+      }, 3000);
+    } catch (e) {
+      showToast('Something went wrong. Please contact habitflow141@gmail.com');
+    }
   }
 
   async function handleLogout() {

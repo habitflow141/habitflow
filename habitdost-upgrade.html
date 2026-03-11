@@ -319,7 +319,11 @@
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Do you offer refunds? <span class="arrow">▼</span></div>
-      <div class="faq-a">We offer a full refund within 7 days of purchase — no questions asked. After 7 days, refunds are not available but you can still cancel and keep Pro access until your subscription period ends. Contact us at habitflow141@gmail.com for refund requests.</div>
+      <div class="faq-a">We offer a full refund within 7 days of purchase — no questions asked. After 7 days, refunds are not available but you can still cancel and keep Pro access until your subscription period ends. Contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="026a63606b76646e6d7533363342656f636b6e2c616d6f">[email&#160;protected]</a> for refund requests.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">What happens when I delete my account? <span class="arrow">▼</span></div>
+      <div class="faq-a">Your account is soft-deleted — your data (habits, streaks, logs) is kept safely for 30 days before being permanently removed. If you deleted by mistake, contact us at habitflow141@gmail.com within 30 days and we'll fully restore your account. After 30 days, all data is permanently deleted and cannot be recovered.</div>
     </div>
   </div>
 
@@ -335,7 +339,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const RAZORPAY_KEY = 'rzp_test_SP1UI47skm2vdG';
     const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
     const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
@@ -457,13 +461,4 @@
       item.classList.toggle('open');
     }
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    init();
-  </script>
-</body>
-</html>
+    
