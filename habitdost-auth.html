@@ -213,7 +213,7 @@
 
       <div class="field">
         <label>Full Name</label>
-        <input type="text" id="signup-name" placeholder="Ayush Kumar" />
+        <input type="text" id="signup-name" placeholder="Your name" />
       </div>
       <div class="field">
         <label>Email Address</label>
@@ -271,6 +271,10 @@
     const SUPABASE_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Auto-switch tab based on URL ?mode param
+    const urlMode = new URLSearchParams(window.location.search).get('mode');
+    if (urlMode === 'signup') switchTab('signup');
 
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));

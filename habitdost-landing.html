@@ -92,6 +92,14 @@
       box-shadow: 0 4px 14px rgba(13,148,136,.3);
     }
     .nav-cta:hover { background: var(--deep); transform: translateY(-1px); }
+    .nav-cta-outline {
+      background: transparent; color: var(--teal);
+      padding: 10px 22px; border-radius: 50px;
+      font-size: .9rem; font-weight: 600;
+      text-decoration: none; border: 1.5px solid var(--teal);
+      transition: background .2s, color .2s, transform .15s;
+    }
+    .nav-cta-outline:hover { background: var(--leaf); transform: translateY(-1px); }
 
     /* ─── HERO ─── */
     .hero {
@@ -504,7 +512,10 @@
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#testimonials">Reviews</a></li>
     </ul>
-    <a href="habitdost-auth.html" class="nav-cta">Start Free →</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="habitdost-auth.html?mode=login" class="nav-cta-outline">Log In</a>
+      <a href="habitdost-auth.html?mode=signup" class="nav-cta">Create Account →</a>
+    </div>
   </nav>
 
   <!-- HERO -->
