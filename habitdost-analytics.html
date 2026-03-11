@@ -244,8 +244,8 @@
     .modal { background: var(--card); border-radius: 28px; padding: 36px; width: 100%; max-width: 480px; margin: 20px; box-shadow: 0 32px 100px rgba(0,0,0,.2); }
     .modal h2 { font-family: 'Lora', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 6px; }
     .modal p { font-size: .84rem; color: var(--muted); margin-bottom: 24px; }
-    .streak-card { background: var(--ink); border-radius: 20px; padding: 28px; position: relative; overflow: hidden; margin-bottom: 20px; }
-    .streak-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(62,207,142,.25), transparent 60%); }
+    .streak-card { background: var(--sidebar, #0f2d25); border-radius: 20px; padding: 28px; position: relative; overflow: hidden; margin-bottom: 20px; }
+    .streak-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, var(--mint), transparent 60%); opacity: .2; }
     .sc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; position: relative; }
     .sc-logo { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
     .sc-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); }
@@ -704,7 +704,7 @@
     const now = new Date();
     const monthStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const todayNum = now.getDate();
-    const max = habits.length || 1;
+    const habitCount = habits.length || 1;
 
     // Build log map for this month
     const logMap = {};
@@ -719,7 +719,7 @@
       const c = logMap[ds] || 0;
       if (c > 0) daysLogged++;
       totalDone += c;
-      if (c >= max) perfectDays++;
+      if (c >= habitCount) perfectDays++;
     }
     const monthRate = todayNum > 0 ? Math.round((daysLogged / todayNum) * 100) : 0;
 
@@ -733,6 +733,17 @@
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() + mondayOffset);
     const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+    // Calculate max = highest check-ins on any day this week
+    let weekMax = 1;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const c = logMap[ds] || 0;
+      if (c > weekMax) weekMax = c;
+    }
+    const max = weekMax;
 
     // Y-axis labels (0 to max)
     let yAxisHTML = '';
