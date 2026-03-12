@@ -339,7 +339,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const RAZORPAY_KEY = 'rzp_test_SP1UI47skm2vdG';
     const SB_URL = 'https://kvllrzlhuqaxirsaacwc.supabase.co';
     const SB_KEY = 'sb_publishable_BfRpRLxE2zUICinspd_wZA_uKKFRoVL';
@@ -444,11 +444,26 @@
         razorpay_payment_id: response.razorpay_payment_id,
         plan: plan,
         amount: plan === 'annual' ? 799 : 99,
-        status: 'success',
         created_at: new Date().toISOString()
       }).catch(() => {}); // table may not exist yet, handled gracefully
 
       // Show success modal
       document.getElementById('modal-msg').textContent = plan === 'annual'
         ? 'Your annual payment was successful! You now have full Pro access for the entire year. Enjoy HabitDost with zero ads and unlimited habits 🎉'
-        : 'Your payment was successf
+        : 'Your payment was successful! You now have full Pro access. Unlimited habits, zero ads, and full analytics await you 🎉';
+      document.getElementById('modal-overlay').classList.add('open');
+    }
+  </script>
+<script>
+  function toggleFAQ(el) {
+    const item = el.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  document.querySelectorAll('.faq-q').forEach(function(q) {
+    q.addEventListener('click', function() { toggleFAQ(this); });
+  });
+</script>
+</body>
+</html>
