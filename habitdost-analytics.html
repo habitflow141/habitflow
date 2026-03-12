@@ -587,7 +587,9 @@
 
     // ── day labels ────────────────────────────────────────────────────────────
     const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    document.getElementById('heatmap-labels').innerHTML = dayNames.map(d => `<div class="day-lbl">${d}</div>`).join('');
+    const shortDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const isMobile = window.innerWidth <= 768;
+    document.getElementById('heatmap-labels').innerHTML = (isMobile ? shortDays : dayNames).map(d => `<div class="day-lbl">${d}</div>`).join('');
 
     // ── render cells ─────────────────────────────────────────────────────────
     const max = habits.length || 1;
