@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>HabitDost — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -143,8 +143,22 @@
     .progress-pct { font-size: .8rem; font-weight: 700; color: var(--teal); min-width: 36px; text-align: right; }
 
     /* WEEK CHART */
-    .week-chart { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px; margin-bottom: 28px; }
-    .week-bars { display: flex; align-items: flex-end; gap: 8px; height: 80px; margin-top: 16px; }
+    .week-chart { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px; margin-bottom: 28px; overflow: hidden; }
+    .week-chart-inner { display: flex; gap: 8px; margin-top: 16px; }
+    .week-yaxis { display: flex; flex-direction: column-reverse; justify-content: space-between; padding-bottom: 28px; min-width: 18px; }
+    .week-yaxis-lbl { font-size: .65rem; color: var(--muted); text-align: right; line-height: 1; }
+    .week-bars-wrap { flex: 1; position: relative; }
+    .week-hlines { position: absolute; inset: 0; bottom: 28px; display: flex; flex-direction: column-reverse; justify-content: space-between; pointer-events: none; }
+    .week-hline { border-top: 1px dashed var(--border); width: 100%; }
+    .week-bars { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-bottom: 28px; position: relative; z-index: 1; box-sizing: border-box; }
+    .week-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; cursor: pointer; }
+    .week-bar { width: 100%; border-radius: 6px 6px 0 0; background: var(--border); transition: height .3s ease; min-height: 3px; }
+    .week-bar.full { background: linear-gradient(180deg, var(--mint), var(--teal)); }
+    .week-bar.partial { background: linear-gradient(180deg, #93c5fd, #60a5fa); }
+    .week-bar.rest { background: linear-gradient(180deg, #fde68a, #fbbf24); }
+    .week-bar.today-bar { outline: 2px solid var(--teal); outline-offset: 2px; }
+    .week-day { font-size: .65rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; position: absolute; bottom: 0; }
+    .week-day.today-lbl { color: var(--teal); font-weight: 800; }
     .week-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .week-bar { width: 100%; border-radius: 6px 6px 0 0; background: var(--leaf); min-height: 4px; transition: height .5s cubic-bezier(.34,1.56,.64,1); }
     .week-bar.today, .week-bar.full { background: linear-gradient(180deg, var(--mint), var(--teal)); }
@@ -248,7 +262,7 @@
     @media (max-width: 900px) { .main { margin-left: 0; padding: 16px; } .stats-row { grid-template-columns: repeat(2,1fr); } }
 
     /* MOBILE NAV */
-    .mobile-topbar { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: var(--ink); padding: 14px 18px; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .mobile-topbar { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: var(--sidebar); padding: 14px 18px; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.08); }
     .mobile-logo { font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; text-decoration: none; }
     .hamburger { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 4px; }
     .hamburger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all .3s; }
@@ -258,7 +272,7 @@
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
 
     /* BOTTOM NAV for mobile */
-    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--ink); border-top: 1px solid rgba(255,255,255,.08); padding: 8px 0 12px; }
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--sidebar); border-top: 1px solid rgba(255,255,255,.08); padding: 8px 0 12px; }
     .bottom-nav-items { display: flex; justify-content: space-around; align-items: center; }
     .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: rgba(255,255,255,.45); font-size: .62rem; font-weight: 600; padding: 4px 12px; border-radius: 10px; transition: color .2s; cursor: pointer; background: none; border: none; font-family: inherit; }
     .bnav-item.active { color: var(--mint); }
@@ -383,7 +397,13 @@
 
     <div class="week-chart">
       <div class="section-title" style="margin-bottom:0">Weekly Overview <span>Last 7 days</span></div>
-      <div class="week-bars" id="week-bars"></div>
+      <div class="week-chart-inner">
+        <div class="week-yaxis" id="week-yaxis"></div>
+        <div class="week-bars-wrap">
+          <div class="week-hlines" id="week-hlines"></div>
+          <div class="week-bars" id="week-bars"></div>
+        </div>
+      </div>
     </div>
   </div>
 
