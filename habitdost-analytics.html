@@ -190,7 +190,7 @@
     .chart-bar.full { background: linear-gradient(180deg,#34d399,#047857); box-shadow: 0 3px 10px rgba(5,150,105,.25); }
     .chart-bar.future { background: rgba(0,0,0,.04); }
     .chart-bar.rest { background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: .8rem; }
-    .chart-label-row { display: flex; gap: 4px; padding-top: 4px; }
+    .chart-label-row { display: flex; gap: 4px; padding: 4px 0 0 24px; }
     .chart-lbl { flex: 1; font-size: .6rem; font-weight: 600; color: #999; text-align: center; white-space: nowrap; }
     
     
@@ -787,7 +787,7 @@
       const isFull  = !isFuture && count >= max && count > 0;
       const hasData = !isFuture && count > 0;
       // Height: each habit unit = (100/max)% of chart height
-      const chartH = 165; // px usable bar height (200px chart-inner - 28px padding - small margin)
+      const chartH = 196; // px — matches chart-inner height of 200px
       const barH = isFuture ? 0 : hasData ? Math.max(Math.round((count/max)*chartH), 6) : 0;
       const barClass = isFull ? 'full' : hasData ? 'has-data' : isFuture ? 'future' : '';
       const activeStyle = isToday ? 'outline:2px solid var(--teal);outline-offset:1px;' : '';
@@ -828,9 +828,9 @@
               <div class="chart-plot">
                 <div class="chart-hlines">${hLinesHTML}</div>
                 <div class="chart-bars">${barsHTML}</div>
-                <div class="chart-label-row">${labelsHTML}</div>
               </div>
             </div>
+            <div class="chart-label-row">${labelsHTML}</div>
           </div>
         </div>
         <div class="chart-legend">
