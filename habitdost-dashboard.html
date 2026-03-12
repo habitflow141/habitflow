@@ -273,11 +273,7 @@
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
 
     /* BOTTOM NAV for mobile */
-    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--sidebar); border-top: 1px solid rgba(255,255,255,.08); padding: 8px 0 12px; }
-    .bottom-nav-items { display: flex; justify-content: space-around; align-items: center; }
-    .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: rgba(255,255,255,.45); font-size: .62rem; font-weight: 600; padding: 4px 12px; border-radius: 10px; transition: color .2s; cursor: pointer; background: none; border: none; font-family: inherit; }
-    .bnav-item.active { color: var(--mint); }
-    .bnav-item .bnav-icon { font-size: 1.2rem; }
+
 
     @media (max-width: 768px) {
       .sidebar { transform: translateX(-100%); transition: transform .3s ease; z-index: 150; }
@@ -285,8 +281,7 @@
       .sidebar-overlay { display: block; opacity: 0; pointer-events: none; transition: opacity .3s; }
       .sidebar-overlay.open { opacity: 1; pointer-events: all; }
       .mobile-topbar { display: flex; }
-      .bottom-nav { display: block; }
-      .main { padding-top: 70px !important; padding-bottom: 80px !important; margin-left: 0 !important; }
+      .main { padding-top: 70px !important; padding-bottom: 24px !important; margin-left: 0 !important; }
       .stats-row { grid-template-columns: repeat(2,1fr); gap: 10px; }
       .greeting h1 { font-size: 1.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
       .main { overflow-x: hidden; }
@@ -323,15 +318,7 @@
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <div class="bottom-nav-items">
-    <button class="bnav-item active" onclick="showView('today');closeSidebar()"><span class="bnav-icon">🏠</span>Today</button>
-    <button class="bnav-item" onclick="showView('reminders');closeSidebar()"><span class="bnav-icon">🔔</span>Reminders</button>
-    <button class="bnav-item" onclick="showView('habits');closeSidebar()"><span class="bnav-icon">📋</span>Habits</button>
-    <a class="bnav-item" href="habitdost-analytics.html"><span class="bnav-icon">📊</span>Analytics</a>
-    <a class="bnav-item" href="habitdost-settings.html"><span class="bnav-icon">⚙️</span>Settings</a>
-  </div>
-</nav>
+
 
 <aside class="sidebar">
   <a href="habitdost-landing.html" class="logo"><img src="logo.svg" width="26" height="26" style="border-radius:7px" alt="" /><span>HabitDost</span></a>

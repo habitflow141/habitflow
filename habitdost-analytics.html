@@ -742,6 +742,7 @@
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() + mondayOffset);
     const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const shortDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
     // Calculate max = highest check-ins on any day this week
     let weekMax = 1;
@@ -776,7 +777,7 @@
         barsHTML += `<div class="chart-bar-wrap">
           <div class="chart-tooltip">😴 Rest Day</div>
           <div class="chart-bar rest" style="height:40px">😴</div>
-          <div class="chart-lbl ${isToday?'today-lbl':''}">${isToday?'📍':dayNames[i]}</div>
+          <div class="chart-lbl ${isToday?'today-lbl':''}">${isToday?'📍':shortDays[i]}</div>
         </div>`;
         continue;
       }
@@ -794,7 +795,7 @@
       barsHTML += `<div class="chart-bar-wrap">
         <div class="chart-tooltip">${tip}</div>
         <div class="chart-bar ${barClass}" style="height:${barH}px;${activeStyle}"></div>
-        <div class="chart-lbl ${isToday?'today-lbl':''}">${isToday?'📍':dayNames[i]}</div>
+        <div class="chart-lbl ${isToday?'today-lbl':''}">${isToday?'📍':shortDays[i]}</div>
       </div>`;
     }
 
