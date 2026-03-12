@@ -185,7 +185,7 @@
     .chart-hline { width: 100%; height: 1px; background: rgba(0,0,0,.06); }
     .chart-bars { display: flex; align-items: flex-end; gap: 4px; width: 100%; height: 100%; padding-bottom: 28px; position: relative; z-index: 1; box-sizing: border-box; }
     .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; position: relative; }
-    .chart-bar { width: 80%; border-radius: 5px 5px 0 0; background: rgba(0,0,0,.06); transition: height .6s ease; flex-shrink: 0; min-height: 4px; }
+    .chart-bar { width: 80%; border-radius: 5px 5px 0 0; background: transparent; transition: height .6s ease; flex-shrink: 0; min-height: 0; }
     .chart-bar.has-data { background: linear-gradient(180deg,#6ee7b7,var(--teal)); }
     .chart-bar.full { background: linear-gradient(180deg,#34d399,#047857); box-shadow: 0 3px 10px rgba(5,150,105,.25); }
     .chart-bar.future { background: rgba(0,0,0,.04); }
@@ -787,7 +787,7 @@
       const hasData = !isFuture && count > 0;
       // Height: each habit unit = (100/max)% of chart height
       const chartH = 155; // px available for bars safely within chart-inner
-      const barH = isFuture ? 4 : hasData ? Math.max(Math.round((count/max)*chartH), 8) : 4;
+      const barH = isFuture ? 0 : hasData ? Math.max(Math.round((count/max)*chartH), 6) : 0;
       const barClass = isFull ? 'full' : hasData ? 'has-data' : isFuture ? 'future' : '';
       const activeStyle = isToday ? 'outline:2px solid var(--teal);outline-offset:1px;' : '';
       const tip = isFuture ? 'Upcoming' : `${count}/${max} habits`;
