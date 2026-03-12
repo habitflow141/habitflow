@@ -100,10 +100,12 @@
       transition: background .2s, color .2s, transform .15s;
     }
     .nav-cta-outline:hover { background: var(--leaf); transform: translateY(-1px); }
-    @media (max-width: 480px) {
-      .nav-cta { padding: 7px 12px; font-size: .75rem; }
-      .nav-cta-outline { padding: 7px 12px; font-size: .75rem; }
-      nav ul { display: none; }
+    .btn-short-text { display: none; }
+    @media (max-width: 500px) {
+      .nav-cta { padding: 8px 14px; font-size: .82rem; }
+      .nav-cta-outline { padding: 8px 14px; font-size: .82rem; }
+      .btn-full-text { display: none; }
+      .btn-short-text { display: inline; }
     }
 
     /* ─── HERO ─── */
@@ -517,9 +519,9 @@
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#testimonials">Reviews</a></li>
     </ul>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
       <a href="habitdost-auth.html?mode=login" class="nav-cta-outline">Log In</a>
-      <a href="habitdost-auth.html?mode=signup" class="nav-cta">Create Account →</a>
+      <a href="habitdost-auth.html?mode=signup" class="nav-cta"><span class="btn-full-text">Create Account →</span><span class="btn-short-text">Sign Up</span></a>
     </div>
   </nav>
 
