@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>HabitDost — Analytics</title>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">  function toggleSidebar() {
@@ -231,10 +231,10 @@
       .sidebar-overlay { display: block; opacity: 0; pointer-events: none; transition: opacity .3s; }
       .sidebar-overlay.open { opacity: 1; pointer-events: all; }
       .mobile-topbar { display: flex; }
-      .main { padding-top: 72px !important; margin-left: 0 !important; }
-      .pricing-grid { grid-template-columns: 1fr !important; }
+      .main { padding-top: 72px !important; padding-bottom: 90px !important; margin-left: 0 !important; }
       .stats-row { grid-template-columns: repeat(2,1fr) !important; }
-      .themes-grid { grid-template-columns: repeat(2,1fr) !important; }
+      .chart-box { overflow-x: auto; }
+      .modal { width: 95vw !important; max-height: 90vh; overflow-y: auto; }
     }
   
 
