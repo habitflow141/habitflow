@@ -184,13 +184,13 @@
     .chart-hlines { position: absolute; inset: 0; bottom: 28px; display: flex; flex-direction: column-reverse; justify-content: space-between; pointer-events: none; z-index: 0; }
     .chart-hline { width: 100%; height: 1px; background: rgba(0,0,0,.06); }
     .chart-bars { display: flex; align-items: flex-end; gap: 4px; width: 100%; height: 100%; padding-bottom: 28px; position: relative; z-index: 1; box-sizing: border-box; }
-    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; position: relative; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; position: relative; padding-bottom: 0; }
     .chart-bar { width: 80%; border-radius: 5px 5px 0 0; background: transparent; transition: height .6s ease; flex-shrink: 0; min-height: 0; }
     .chart-bar.has-data { background: linear-gradient(180deg,#6ee7b7,var(--teal)); }
     .chart-bar.full { background: linear-gradient(180deg,#34d399,#047857); box-shadow: 0 3px 10px rgba(5,150,105,.25); }
     .chart-bar.future { background: rgba(0,0,0,.04); }
     .chart-bar.rest { background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: .8rem; }
-    .chart-lbl { font-size: .55rem; font-weight: 600; color: #999; white-space: nowrap; transform: rotate(-40deg); transform-origin: top center; margin-top: 4px; height: 26px; display: flex; align-items: flex-start; }
+    .chart-lbl { font-size: .55rem; font-weight: 600; color: #999; white-space: nowrap; transform: rotate(-40deg); transform-origin: top center; height: 26px; display: flex; align-items: flex-start; position: absolute; bottom: 0; left: 50%; }
     .chart-lbl.today-lbl { color: var(--teal); font-weight: 800; }
     .chart-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: .67rem; padding: 4px 9px; border-radius: 7px; white-space: nowrap; z-index: 20; pointer-events: none; }
     .chart-bar-wrap:hover .chart-tooltip { display: block; }
@@ -786,7 +786,7 @@
       const isFull  = !isFuture && count >= max && count > 0;
       const hasData = !isFuture && count > 0;
       // Height: each habit unit = (100/max)% of chart height
-      const chartH = 155; // px available for bars safely within chart-inner
+      const chartH = 165; // px usable bar height (200px chart-inner - 28px padding - small margin)
       const barH = isFuture ? 0 : hasData ? Math.max(Math.round((count/max)*chartH), 6) : 0;
       const barClass = isFull ? 'full' : hasData ? 'has-data' : isFuture ? 'future' : '';
       const activeStyle = isToday ? 'outline:2px solid var(--teal);outline-offset:1px;' : '';
