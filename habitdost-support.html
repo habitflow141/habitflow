@@ -139,6 +139,13 @@
       .main-grid { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; }
     }
+  
+    .sfaq-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+    .sfaq-q { padding: 14px 16px; font-weight: 700; font-size: .88rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
+    .sfaq-q span { transition: transform .2s; color: var(--muted); }
+    .sfaq-item.open .sfaq-q span { transform: rotate(180deg); }
+    .sfaq-a { max-height: 0; overflow: hidden; padding: 0 16px; font-size: .84rem; color: var(--muted); line-height: 1.65; transition: max-height .3s ease, padding .3s; }
+    .sfaq-item.open .sfaq-a { max-height: 300px; padding: 0 16px 14px; }
   </style>
 </head>
 <body data-theme="forest">
@@ -239,7 +246,7 @@
 
       <div class="info-block">
         <h3>📬 Contact Us Directly</h3>
-        <a href="mailto:habitflow141@gmail.com">habitflow141@gmail.com</a>
+        <a href="/cdn-cgi/l/email-protection#345c55565d4052585b43050005745359555d581a575b59"><span class="__cf_email__" data-cfemail="402821222934262c2f3771747100272d21292c6e232f2d">[email&#160;protected]</span></a>
         <p style="margin-top:6px">For urgent issues, email us directly.</p>
       </div>
 
@@ -266,29 +273,32 @@
       <div class="info-block">
         <h3>❓ Common Questions</h3>
         <div class="sfaq-item">
-          <div class="sfaq-q" onclick="this.parentElement.classList.toggle('open')">💰 How do I get a refund? <span>▼</span></div>
+          <div class="sfaq-q" onclick="toggleSFAQ(this)">💰 How do I get a refund? <span>▼</span></div>
           <div class="sfaq-a">We offer a full refund within 7 days of purchase. Fill the form above, select "Refund Request" as the topic, and include your Transaction ID. We'll process it within 2 business days.</div>
         </div>
         <div class="sfaq-item">
-          <div class="sfaq-q" onclick="this.parentElement.classList.toggle('open')">✨ My Pro didn't activate <span>▼</span></div>
+          <div class="sfaq-q" onclick="toggleSFAQ(this)">✨ My Pro didn't activate <span>▼</span></div>
           <div class="sfaq-a">After payment, your Pro plan activates automatically within a few seconds. Try refreshing the page. If it still shows Free, contact us with your Transaction ID and we'll fix it manually.</div>
         </div>
         <div class="sfaq-item">
-          <div class="sfaq-q" onclick="this.parentElement.classList.toggle('open')">💳 My payment failed <span>▼</span></div>
+          <div class="sfaq-q" onclick="toggleSFAQ(this)">💳 My payment failed <span>▼</span></div>
           <div class="sfaq-a">If your payment failed, no amount is deducted. Try again using a different UPI app or payment method. If amount was deducted but plan didn't activate, contact us immediately with your Transaction ID.</div>
         </div>
         <div class="sfaq-item">
-          <div class="sfaq-q" onclick="this.parentElement.classList.toggle('open')">❌ How do I delete my account? <span>▼</span></div>
+          <div class="sfaq-q" onclick="toggleSFAQ(this)">❌ How do I delete my account? <span>▼</span></div>
           <div class="sfaq-a">Go to Settings → Danger Zone → Delete Account. Your data is kept for 30 days before permanent deletion. Contact us within 30 days to restore your account if needed.</div>
         </div>
       </div>
 
       <div class="info-block">
         <h3>📋 Refund Policy</h3>
-        <p>We offer a full refund within <strong>7 days</strong> of purchase — no questions asked. Just submit a refund request with your Transaction ID and we'll process it within 2 business days.</p>
-      </div>
+        <p>We offer a full refund within <strong>7 days</strong> of purchase — no questions asked. Just submit a refund request with your Transaction ID and we'll process it within 2 business days.
 
-    </div>
-  </div>
-
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+<script>
+function toggleSFAQ(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.sfaq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
