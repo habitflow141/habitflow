@@ -540,10 +540,11 @@
     const badge = document.getElementById('can-count');
     list.innerHTML = '<div class="del-empty">Loading...</div>';
 
+    // Simply fetch all profiles where cancel_at_period_end is true
+    // No deleted_at filter — keep it simple
     const { data, error } = await sb.from('profiles')
-      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, created_at')
+      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at, created_at')
       .eq('cancel_at_period_end', true)
-      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -553,7 +554,8 @@
       return;
     }
 
-    const cancellers = data || [];
+    // Filter out users who also have deleted_at set (they're in deletion queue already)
+    const cancellers = (data || []).filter(u => !u.deleted_at);
     console.log('Cancellation requests:', cancellers.length);
 
     if (!cancellers.length) {
