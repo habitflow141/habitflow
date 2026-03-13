@@ -611,6 +611,16 @@
         <h3>Share Your Streak Card</h3>
         <p>Generate a beautiful shareable card of your progress. Post it on Instagram, WhatsApp, or LinkedIn. Brag a little — you earned it.</p>
       </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">😴</div>
+        <h3>Planned Rest Days</h3>
+        <p>Life happens. Mark a day as a Rest Day and protect your streak without guilt. Free users get 1 rest day/month, Pro gets up to 5.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🧑‍💼</div>
+        <h3>Profession Avatars</h3>
+        <p>Pick an avatar that matches who you are — Student, Doctor, Engineer, Designer, and more. Male, Female, and Neutral options for everyone.</p>
+      </div>
     </div>
   </section>
 
@@ -644,7 +654,7 @@
     <div class="pricing-header reveal">
       <div class="section-label">Pricing</div>
       <h2 class="section-title">Simple, honest pricing</h2>
-      <p class="section-sub">Start free forever. Upgrade when you're ready for the full experience. No hidden charges.</p>
+      <p class="section-sub">Start free forever. Upgrade when you're ready. Cancel anytime from Settings — no questions asked, no hidden charges.</p>
     </div>
 
     <div class="pricing-cards">
@@ -658,6 +668,8 @@
           <li><span class="tick">✓</span> Up to 3 habits</li>
           <li><span class="tick">✓</span> Basic streak counter</li>
           <li><span class="tick">✓</span> 1 daily reminder</li>
+          <li><span class="tick">✓</span> 1 rest day/month</li>
+          <li><span class="tick">✓</span> Profession avatar</li>
           <li class="muted-feat"><span class="cross">✕</span> Analytics & heatmap</li>
           <li class="muted-feat"><span class="cross">✕</span> No ads</li>
           <li class="muted-feat"><span class="cross">✕</span> Custom themes</li>
@@ -679,6 +691,7 @@
           <li><span class="tick">✓</span> Analytics & heatmap calendar</li>
           <li><span class="tick">✓</span> Zero ads, always</li>
           <li><span class="tick">✓</span> 5 custom themes</li>
+          <li><span class="tick">✓</span> 3 rest days/month</li>
         </ul>
         <a href="habitdost-auth.html" class="p-btn p-btn-filled">Start 7-Day Free Trial</a>
       </div>
@@ -691,6 +704,7 @@
         <div class="p-divider"></div>
         <ul class="p-features">
           <li><span class="tick">✓</span> Everything in Pro Monthly</li>
+          <li><span class="tick">✓</span> 5 rest days/month</li>
           <li><span class="tick">✓</span> Shareable streak card</li>
           <li><span class="tick">✓</span> CSV & PDF export</li>
           <li><span class="tick">✓</span> Early access to new features</li>
@@ -769,12 +783,12 @@
       <a href="habitdost-privacy.html">Privacy Policy</a>
       <a href="habitdost-terms.html">Terms of Service</a>
       <a href="habitdost-support.html">Contact Us</a>
-      <a href="mailto:habitflow141@gmail.com">habitflow141@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#513930333825373d3e2660656011363c30383d7f323e3c"><span class="__cf_email__" data-cfemail="274f46454e53414b485016131667404a464e4b0944484a">[email&#160;protected]</span></a>
     </div>
     <p>© 2026 HabitDost · Made with 💚 in India</p>
   </footer>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Scroll reveal — trigger immediately if already in viewport
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
@@ -803,12 +817,4 @@
       }
       // last 3 cells always filled (recent activity)
       if (i >= 25) lvl = Math.floor(Math.random() * 2) + 3;
-      cell.classList.add('h' + lvl);
-      cell.title = lvl === 0 ? 'No activity' : `Level ${lvl} activity`;
-      grid.appendChild(cell);
-    }
-
-    // Counter animation
-    function animateCounter(el, target, suffix = '') {
-      let current = 0;
-      const step = tar
+      cell.classList.a
