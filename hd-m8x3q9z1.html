@@ -577,7 +577,7 @@
 
     const { data, error } = await sb
       .from('cancellation_requests')
-      .select('user_name, user_email, plan, created_at')
+      .select('id, user_name, user_email, plan, created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
