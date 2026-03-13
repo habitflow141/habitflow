@@ -270,8 +270,8 @@
     document.getElementById('admin-panel').style.display = 'block';
     document.getElementById('admin-email-display').textContent = email;
     await loadAllUsers();
-    loadCancellationRequests();
-    loadDeletionRequests();
+    await loadCancellationRequests();
+    await loadDeletionRequests();
   }
 
   async function doLogout() {
@@ -386,10 +386,24 @@
 
 
   // ── DELETION REQUESTS ─────────────────────────────────────────────────────
-  function loadDeletionRequests() {
-    const deleters = allUsers.filter(u => u.deleted_at);
+  async function loadDeletionRequests() {
     const list = document.getElementById('del-list');
     const badge = document.getElementById('del-count');
+    list.innerHTML = '<div class="del-empty">Loading...</div>';
+
+    const { data, error } = await sb.from('profiles')
+      .select('id, full_name, email, plan, deleted_at, created_at')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+
+    if (error) {
+      console.error('loadDeletionRequests error:', error.message);
+      list.innerHTML = '<div class="del-empty">⚠️ Error: ' + error.message + '</div>';
+      return;
+    }
+
+    const deleters = data || [];
+    console.log('Deletion requests found:', deleters.length);
 
     if (!deleters.length) {
       list.innerHTML = '<div class="del-empty">✅ No pending deletion requests</div>';
@@ -521,10 +535,25 @@
   });
 
   // ── CANCELLATION REQUESTS ─────────────────────────────────────────────────
-  function loadCancellationRequests() {
-    const cancellers = allUsers.filter(u => u.cancel_at_period_end === true && !u.deleted_at);
+  async function loadCancellationRequests() {
     const list = document.getElementById('can-list');
     const badge = document.getElementById('can-count');
+    list.innerHTML = '<div class="del-empty">Loading...</div>';
+
+    // Query directly — don't rely on cache boolean comparison
+    const { data, error } = await sb.from('profiles')
+      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at')
+      .eq('cancel_at_period_end', true)
+      .is('deleted_at', null);
+
+    if (error) {
+      console.error('loadCancellationRequests error:', error.message);
+      list.innerHTML = '<div class="del-empty">⚠️ Error: ' + error.message + '</div>';
+      return;
+    }
+
+    const cancellers = data || [];
+    console.log('Cancellers found:', cancellers.length, cancellers);
 
     if (!cancellers.length) {
       list.innerHTML = '<div class="del-empty">✅ No active cancellation requests</div>';
@@ -538,12 +567,12 @@
     list.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">' + cancellers.map(u => {
       const endDate = u.subscription_end_date ? new Date(u.subscription_end_date) : null;
       const daysLeft = endDate ? Math.ceil((endDate - new Date()) / (1000*60*60*24)) : null;
-      const planLabel = u.plan === 'pro_annual' ? '⭐ Pro Annual' : '✅ Pro Monthly';
+      const planLabel = u.plan === 'pro_annual' ? '⭐ Pro Annual' : u.plan === 'pro' ? '✅ Pro Monthly' : '🆓 Free';
       const planClass = u.plan === 'pro_annual' ? 'plan-annual' : 'plan-pro';
       return `<div class="can-item" id="canrow-${u.id}">
         <div class="can-info">
           <div class="can-name">${u.full_name || '(no name)'}</div>
-          <div class="can-email">${u.email}</div>
+          <div class="can-email">${u.email || '—'}</div>
           <div class="can-meta">
             <span class="del-tag ${planClass}">${planLabel}</span>
             ${daysLeft !== null ? `<span class="del-tag days">⏳ ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'}</span>` : ''}
