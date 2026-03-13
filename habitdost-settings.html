@@ -618,13 +618,29 @@ function closeSidebar() {
     const confirmed = confirm(`Cancel your ${planLabel} plan?\n\nYou will keep full Pro access until your subscription end date. After that, your account will be downgraded to Free.\n\nRefunds are only available within 7 days of purchase. Contact habitflow141@gmail.com for refund requests.`);
     if (!confirmed) return;
 
-    showToast('Scheduling cancellation...');
-    const { error } = await sb.from('profiles').update({ cancel_at_period_end: true }).eq('id', currentUser.id);
-    if (error) {
-      showToast('❌ Something went wrong. Please contact support.');
-      return;
-    }
-    showToast('✅ Cancellation scheduled. You keep Pro access until your end date.');
+    showToast('Sending cancellation request...');
+
+    // 1. Mark profile
+    const { error: profileErr } = await sb.from('profiles')
+      .update({ cancel_at_period_end: true })
+      .eq('id', currentUser.id);
+    if (profileErr) { showToast('❌ Something went wrong. Please contact support.'); return; }
+
+    // 2. Insert cancellation request so admin can see it
+    const { data: profile } = await sb.from('profiles')
+      .select('full_name, email, subscription_end_date')
+      .eq('id', currentUser.id).single();
+
+    await sb.from('cancellation_requests').insert({
+      user_id: currentUser.id,
+      user_email: profile?.email || currentUser.email,
+      user_name: profile?.full_name || '',
+      plan: userPlan,
+      subscription_end_date: profile?.subscription_end_date || null,
+      status: 'pending'
+    });
+
+    showToast('✅ Cancellation request sent. You keep Pro access until your end date.');
     setTimeout(() => window.location.reload(), 2500);
   }
 
