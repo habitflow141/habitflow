@@ -509,36 +509,47 @@
   function onSearchInput() {
     const q = document.getElementById('search-email').value.trim();
     const list = document.getElementById('ac-list');
-    if (!q || q.length < 2) { list.classList.remove('show'); return; }
+    if (!q || q.length < 1) { list.classList.remove('show'); return; }
     clearTimeout(acTimer);
-    acTimer = setTimeout(() => fetchAutocomplete(q), 250);
+    acTimer = setTimeout(() => fetchAutocomplete(q), 200);
   }
 
   async function fetchAutocomplete(q) {
     const list = document.getElementById('ac-list');
-    // Search by email OR name
+    list.innerHTML = '<div class="ac-item"><span class="ac-name" style="color:var(--muted)">Searching...</span></div>';
+    list.classList.add('show');
+
+    // Search email starting with q OR containing q, and name containing q
     const { data: byEmail } = await sb.from('profiles')
       .select('id, full_name, email, plan')
-      .ilike('email', '%' + q + '%')
-      .limit(4);
+      .ilike('email', q + '%')
+      .limit(5);
+
     const { data: byName } = await sb.from('profiles')
       .select('id, full_name, email, plan')
-      .ilike('full_name', '%' + q + '%')
-      .limit(4);
+      .ilike('full_name', q + '%')
+      .limit(5);
 
-    // Merge + deduplicate by id
+    // Merge + deduplicate
     const seen = new Set();
     const results = [...(byEmail||[]), ...(byName||[])].filter(u => {
+      if (!u.email) return false;
       if (seen.has(u.id)) return false;
       seen.add(u.id); return true;
     }).slice(0, 6);
 
-    if (!results.length) { list.classList.remove('show'); return; }
-    list.innerHTML = results.map(u => `
-      <div class="ac-item" onclick="selectAutocomplete('${u.email}')">
-        <span class="ac-name">${u.full_name || '(no name)'}</span>
+    if (!results.length) {
+      list.innerHTML = '<div class="ac-item"><span class="ac-name" style="color:var(--muted)">No users found</span></div>';
+      return;
+    }
+
+    list.innerHTML = results.map(u => {
+      const planLabel = u.plan === 'pro_annual' ? '⭐' : u.plan === 'pro' ? '✅' : '🆓';
+      return `<div class="ac-item" onclick="selectAutocomplete('${u.email}')">
+        <span class="ac-name">${planLabel} ${u.full_name || '(no name)'}</span>
         <span class="ac-email">${u.email}</span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     list.classList.add('show');
   }
 
