@@ -600,7 +600,7 @@
       const planLabel = r.plan === 'pro_annual' ? '⭐ Pro Annual' : '✅ Pro Monthly';
       const planClass = r.plan === 'pro_annual' ? 'annual' : 'pro';
       const when = new Date(r.created_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-      return `<div class="del-item">
+      return `<div class="del-item" id="canrow-${r.id}">
         <div class="del-info">
           <div class="del-name">${r.user_name || 'Unnamed'}</div>
           <div class="del-email">${r.user_email || '—'}</div>
@@ -609,8 +609,33 @@
             <span class="del-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">📅 ${when}</span>
           </div>
         </div>
+        <div class="del-actions">
+          <button class="btn-restore" onclick="markCancelDone('${r.id}', this)">✅ Mark Done</button>
+        </div>
       </div>`;
     }).join('');
+  }
+
+  async function markCancelDone(requestId, btn) {
+    const row = btn.closest('.del-item');
+    const name = row.querySelector('.del-name').textContent;
+    if (!confirm('Mark cancellation for ' + name + ' as done?\n\nThis means you have already manually downgraded their plan.')) return;
+    btn.disabled = true; btn.textContent = 'Saving...';
+    const { error } = await sb.from('cancellation_requests').update({ status: 'completed' }).eq('id', requestId);
+    if (error) { showToast('❌ ' + error.message); btn.disabled = false; btn.textContent = '✅ Mark Done'; return; }
+    row.style.transition = 'opacity 0.4s';
+    row.style.opacity = '0';
+    setTimeout(() => {
+      row.remove();
+      const remaining = document.querySelectorAll('[id^="canrow-"]').length;
+      const badge = document.getElementById('can-count');
+      if (remaining === 0) {
+        badge.style.display = 'none';
+        document.getElementById('can-list').innerHTML = '<div class="del-empty">✅ No cancellation requests</div>';
+      } else { badge.textContent = remaining; }
+    }, 400);
+    addLog('✅ Marked cancellation done for: ' + name, 'success');
+    showToast('✅ Marked as done');
   }
 
   // ══════════════════════════════════════════════════════
