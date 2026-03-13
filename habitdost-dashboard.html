@@ -569,7 +569,7 @@
     messaging.onMessage(p => showToast(`🔔 ${p.notification?.body || 'Reminder!'}`));
   } catch(e) {}
 
-  let currentUser = null, habits = [], todayLogs = new Set(), selectedEmoji = '🧘';
+  let currentUser = null, habits = [], todayLogs = new Set(), allLogs = [], selectedEmoji = '🧘';
   let isRestDay = false, restDaysThisMonth = 0;
   const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
   let today = getToday();
@@ -659,6 +659,7 @@
     checkNotifStatus();
     await loadHabits();
     await loadTodayLogs();
+    await loadWeekLogs();
     await loadRestDayStatus();
     renderAll();
     renderWeekChart();
@@ -742,6 +743,20 @@
     const { data } = await sb.from('habit_logs').select('habit_id').eq('user_id', currentUser.id).eq('completed_date', today).in('habit_id', habits.map(h=>h.id));
     todayLogs = new Set((data||[]).map(l=>l.habit_id));
   }
+  async function loadWeekLogs() {
+    if (!habits.length) return;
+    // Get Mon-Sun dates of current week
+    const now = new Date();
+    const dow = now.getDay() === 0 ? 7 : now.getDay();
+    const weekDates = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (dow - i));
+      weekDates.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+    }
+    const { data } = await sb.from('habit_logs').select('habit_id,completed_date').eq('user_id', currentUser.id).in('completed_date', weekDates);
+    allLogs = data || [];
+  }
 
   // ── RENDER ──
   function renderAll() { renderHabits(); renderAllHabits(); renderReminders(); updateStats(); }
@@ -808,11 +823,24 @@
     const done = todayLogs.size, total = habits.length, pct = total>0?Math.round(done/total*100):0;
     document.getElementById('progress-fill').style.width = pct+'%';
     document.getElementById('progress-pct').textContent = pct+'%';
-    document.getElementById('progress-label').textContent = `${done} of ${total} complete`;
-    document.getElementById('stat-today').textContent = `${done}/${total}`;
-    document.getElementById('stat-week').textContent = pct+'%';
+    document.getElementById('progress-label').textContent = done+' of '+total+' complete';
+    document.getElementById('stat-today').textContent = done+'/'+total;
     document.getElementById('stat-streak').textContent = habits.reduce((m,h)=>Math.max(m,h.current_streak||0),0);
     document.getElementById('stat-total').textContent = habits.reduce((s,h)=>s+(h.total_logs||0),0);
+
+    // Real weekly completion — Mon to today only
+    const now = new Date();
+    const dow = now.getDay() === 0 ? 7 : now.getDay(); // Mon=1 ... Sun=7
+    const weekDates = [];
+    for (let i = 1; i <= dow; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (dow - i));
+      weekDates.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+    }
+    const weekLogs = (allLogs||[]).filter(l => weekDates.includes(l.completed_date)).length;
+    const weekPossible = total * weekDates.length;
+    const weekPct = weekPossible > 0 ? Math.round((weekLogs / weekPossible) * 100) : 0;
+    document.getElementById('stat-week').textContent = weekPct+'%';
   }
 
   // ── REMINDER ACTIONS ──
