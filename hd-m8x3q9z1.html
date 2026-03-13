@@ -279,25 +279,36 @@
 
   // ── SEARCH USER ───────────────────────────────────────────────────────────
   async function searchUser() {
-    const email = document.getElementById('search-email').value.trim().toLowerCase();
-    if (!email) return showToast('Enter an email address');
+    const q = document.getElementById('search-email').value.trim();
+    if (!q) return showToast('Enter a name or email');
 
     const btn = document.getElementById('search-btn');
     btn.disabled = true; btn.textContent = 'Searching...';
 
-    // Search auth users via profiles table (email stored in auth, we join via id)
-    // We use a service-level workaround: search profiles by email stored in auth.users
-    // Since we only have anon key, we search profiles and match via stored email in profiles
-    const { data, error } = await sb
-      .from('profiles')
+    // Try exact email first, then name search
+    let data = null, error = null;
+    const res1 = await sb.from('profiles')
       .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, created_at')
-      .eq('email', email)
+      .ilike('email', q)
       .maybeSingle();
+
+    if (res1.data) {
+      data = res1.data;
+    } else {
+      // Try name search
+      const res2 = await sb.from('profiles')
+        .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, created_at')
+        .ilike('full_name', '%' + q + '%')
+        .limit(1)
+        .maybeSingle();
+      data = res2.data;
+      error = res2.error;
+    }
 
     btn.disabled = false; btn.textContent = 'Search';
 
     if (error) { showToast('❌ Error: ' + error.message); return; }
-    if (!data) { showToast('⚠️ No user found with that email'); document.getElementById('user-card').classList.remove('visible'); return; }
+    if (!data) { showToast('⚠️ No user found'); document.getElementById('user-card').classList.remove('visible'); return; }
 
     foundUserId = data.id;
     renderUserCard(data);
@@ -486,31 +497,44 @@
   let allUsers = [];
 
   async function loadAllUsers() {
-    const { data, error } = await sb.from('profiles')
-      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at, created_at')
-      .order('created_at', { ascending: false });
-    if (error) {
-      console.error('loadAllUsers error:', error.message);
-      showToast('⚠️ Could not load users: ' + error.message);
-    }
-    allUsers = data || [];
-    console.log('Loaded users:', allUsers.length);
+    // Minimal — just kept for any future use. Main queries are now direct.
+    const { data } = await sb.from('profiles')
+      .select('id, full_name, email, plan')
+      .limit(1); // just a test ping
+    console.log('Admin session active, profiles accessible:', !!data);
   }
 
-  // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────
+  // ── AUTOCOMPLETE — queries Supabase directly ─────────────────────────────
+  let acTimer = null;
   function onSearchInput() {
-    const q = document.getElementById('search-email').value.trim().toLowerCase();
+    const q = document.getElementById('search-email').value.trim();
     const list = document.getElementById('ac-list');
-    if (!q || q.length < 1) { list.classList.remove('show'); return; }
+    if (!q || q.length < 2) { list.classList.remove('show'); return; }
+    clearTimeout(acTimer);
+    acTimer = setTimeout(() => fetchAutocomplete(q), 250);
+  }
 
-    const matches = allUsers.filter(u =>
-      (u.email || '').toLowerCase().includes(q) ||
-      (u.full_name || '').toLowerCase().includes(q)
-    ).slice(0, 6);
+  async function fetchAutocomplete(q) {
+    const list = document.getElementById('ac-list');
+    // Search by email OR name
+    const { data: byEmail } = await sb.from('profiles')
+      .select('id, full_name, email, plan')
+      .ilike('email', '%' + q + '%')
+      .limit(4);
+    const { data: byName } = await sb.from('profiles')
+      .select('id, full_name, email, plan')
+      .ilike('full_name', '%' + q + '%')
+      .limit(4);
 
-    if (!matches.length) { list.classList.remove('show'); return; }
+    // Merge + deduplicate by id
+    const seen = new Set();
+    const results = [...(byEmail||[]), ...(byName||[])].filter(u => {
+      if (seen.has(u.id)) return false;
+      seen.add(u.id); return true;
+    }).slice(0, 6);
 
-    list.innerHTML = matches.map(u => `
+    if (!results.length) { list.classList.remove('show'); return; }
+    list.innerHTML = results.map(u => `
       <div class="ac-item" onclick="selectAutocomplete('${u.email}')">
         <span class="ac-name">${u.full_name || '(no name)'}</span>
         <span class="ac-email">${u.email}</span>

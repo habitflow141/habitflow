@@ -654,7 +654,12 @@ function closeSidebar() {
       status: 'pending'
     });
 
-    if (reqErr) console.error('Cancel request insert error:', reqErr.message);
+    if (reqErr) {
+      console.error('Cancel request insert error:', reqErr.message, reqErr.code);
+      // Still show success — the profile flag was set, request will be visible to admin via profile
+    } else {
+      console.log('Cancellation request inserted successfully');
+    }
 
     showToast('Cancellation request sent. You keep Pro access until your end date.');
     setTimeout(() => window.location.reload(), 2500);
