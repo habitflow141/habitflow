@@ -417,14 +417,15 @@
           </div>
         </div>
         <div class="del-actions">
-          <button class="btn-restore" onclick="restoreUser('${u.id}', '${u.full_name || 'this user'}')">↩️ Restore</button>
-          <button class="btn-permdelete" onclick="hardDeleteUser('${u.id}', '${u.full_name || 'this user'}')">🗑️ Delete Data</button>
+          <button class="btn-restore" onclick="restoreUser('${u.id}', this)">↩️ Restore</button>
+          <button class="btn-permdelete" onclick="hardDeleteUser('${u.id}', this)">🗑️ Delete Data</button>
         </div>
       </div>`;
     }).join('');
   }
 
-  async function restoreUser(userId, name) {
+  async function restoreUser(userId, btn) {
+    const name = btn.closest('.del-item')?.querySelector('.del-name')?.textContent || 'this user';
     if (!confirm('Restore ' + name + '? This will clear their deletion request and give them full access back.')) return;
     const { error } = await sb.from('profiles').update({ deleted_at: null }).eq('id', userId);
     if (error) { showToast('❌ Restore failed: ' + error.message); return; }
@@ -442,7 +443,8 @@
     }
   }
 
-  async function hardDeleteUser(userId, name) {
+  async function hardDeleteUser(userId, btn) {
+    const name = btn.closest('.del-item')?.querySelector('.del-name')?.textContent || 'this user';
     if (!confirm('⚠️ Permanently delete ALL data for ' + name + '?\n\nThis deletes:\n• Profile\n• All habits & logs\n• Payments\n• Reviews\n• Rest days\n\nThis cannot be undone. The auth account will still exist in Supabase — delete it manually there if needed.')) return;
 
     // Delete in order (child tables first)
@@ -472,10 +474,15 @@
   let allUsers = [];
 
   async function loadAllUsers() {
-    const { data } = await sb.from('profiles')
+    const { data, error } = await sb.from('profiles')
       .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at, created_at')
       .order('created_at', { ascending: false });
+    if (error) {
+      console.error('loadAllUsers error:', error.message);
+      showToast('⚠️ Could not load users: ' + error.message);
+    }
     allUsers = data || [];
+    console.log('Loaded users:', allUsers.length);
   }
 
   // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────
@@ -544,13 +551,14 @@
           </div>
         </div>
         <div class="del-actions">
-          <button class="btn-keep" onclick="reactivateUser('${u.id}', '${(u.full_name||'this user').replace(/'/g,'')}')" title="Remove cancellation — keep them on Pro">↩️ Undo Cancel</button>
+          <button class="btn-keep" onclick="reactivateUser('${u.id}', this)" title="Remove cancellation — keep them on Pro">↩️ Undo Cancel</button>
         </div>
       </div>`;
     }).join('') + '</div>';
   }
 
-  async function reactivateUser(userId, name) {
+  async function reactivateUser(userId, btn) {
+    const name = btn.closest('.can-item')?.querySelector('.can-name')?.textContent || 'this user';
     if (!confirm('Remove cancellation for ' + name + '? Their subscription will continue normally.')) return;
     const { error } = await sb.from('profiles').update({ cancel_at_period_end: false }).eq('id', userId);
     if (error) { showToast('❌ Failed: ' + error.message); return; }
