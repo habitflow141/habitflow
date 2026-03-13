@@ -82,7 +82,7 @@
     .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
     .sidebar-footer { margin-top: auto; }
     .user-chip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
-    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--mint), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
     .user-name { font-size: .8rem; font-weight: 600; color: #fff; }
     .user-plan { font-size: .68rem; color: rgba(255,255,255,.4); }
     .logout-btn { background: none; border: none; color: rgba(255,255,255,.3); cursor: pointer; margin-left: auto; font-size: .9rem; transition: color .2s; font-family: inherit; }
@@ -435,16 +435,17 @@
       if (p?.full_name) {
         document.getElementById('nav-name').textContent = p.full_name;
         const av = document.getElementById('nav-avatar');
+        if (av) av.textContent = profile?.avatar || profile?.full_name?.[0]?.toUpperCase() || '🙂';
         if (av) av.textContent = p.full_name[0].toUpperCase();
       }
     });
     document.getElementById('nav-name').textContent = name;
-    document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
+    // avatar set from profile load
     document.getElementById('sc-name').textContent = name;
     document.getElementById('sc-date').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('month-label').textContent = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
-    const { data: profile } = await sb.from('profiles').select('plan, full_name').eq('id', currentUser.id).single();
+    const { data: profile } = await sb.from('profiles').select('plan, full_name, avatar').eq('id', currentUser.id).single();
     userPlan = profile?.plan || 'free';
     document.getElementById('nav-plan').textContent = userPlan === 'pro_annual' ? '✨ Pro Annual' : userPlan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
 

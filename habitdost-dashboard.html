@@ -75,7 +75,7 @@
     .nav-link .icon { font-size: 1rem; width: 20px; text-align: center; }
     .sidebar-footer { margin-top: auto; }
     .user-chip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
-    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--mint), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
     .user-name { font-size: .8rem; font-weight: 600; color: #fff; }
     .user-plan { font-size: .68rem; color: rgba(255,255,255,.4); }
     .logout-btn { background: none; border: none; color: rgba(255,255,255,.3); cursor: pointer; margin-left: auto; font-size: .9rem; transition: color .2s; font-family: inherit; }
@@ -585,7 +585,7 @@
       }
     }
     document.getElementById('nav-name').textContent = name;
-    document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
+    // avatar set from profile load
     document.getElementById('greeting').textContent = `${getGreeting(name)}`;
     document.getElementById('today-date-label').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long'});
     document.getElementById('date-badge').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
