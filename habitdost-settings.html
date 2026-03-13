@@ -404,6 +404,14 @@ function closeSidebar() {
   let currentUser = null;
   let userPlan = "free";
 
+  function showToast(msg, duration = 3000) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
   // Apply theme from localStorage immediately
   (function() {
     const t = localStorage.getItem('hf-theme') || 'forest';
@@ -455,7 +463,8 @@ function closeSidebar() {
             cancelBtn.style.display = 'inline-block';
             if (cancelAtEnd) {
               cancelBtn.textContent = 'Cancellation Scheduled';
-              cancelBtn.disabled = true;
+              cancelBtn.style.opacity = '0.6';
+              // Keep enabled so user can re-trigger if needed
             }
           }
         }
@@ -628,41 +637,48 @@ function closeSidebar() {
 
   async function cancelPlan() {
     const planLabel = userPlan === 'pro_annual' ? 'Pro Annual' : 'Pro Monthly';
-    const confirmed = confirm(`Cancel your ${planLabel} plan?\n\nYou will keep full Pro access until your subscription end date. After that, your account will be downgraded to Free.\n\nRefunds are only available within 7 days of purchase. Contact habitflow141@gmail.com for refund requests.`);
+
+    const confirmed = confirm('Cancel your ' + planLabel + ' plan?\n\nYou will keep full Pro access until your subscription end date. After that, your account will be downgraded to Free.\n\nRefunds are only available within 7 days of purchase. Contact habitflow141@gmail.com for refund requests.');
     if (!confirmed) return;
 
-    showToast('Sending cancellation request...');
+    const cancelBtn = document.getElementById('cancel-plan-btn');
+    if (cancelBtn) { cancelBtn.disabled = true; cancelBtn.textContent = 'Processing...'; }
 
-    // 1. Mark profile flag
-    const { error: profileErr } = await sb.from('profiles')
-      .update({ cancel_at_period_end: true })
-      .eq('id', currentUser.id);
-    if (profileErr) { showToast('Something went wrong. Please contact support.'); return; }
+    try {
+      // Step 1: Get full profile first
+      const { data: p, error: fetchErr } = await sb.from('profiles')
+        .select('full_name, email, plan, subscription_end_date')
+        .eq('id', currentUser.id).single();
 
-    // 2. Get profile details for admin record
-    const { data: p } = await sb.from('profiles')
-      .select('full_name, email, subscription_end_date')
-      .eq('id', currentUser.id).single();
+      if (fetchErr) throw new Error('Could not fetch profile: ' + fetchErr.message);
 
-    // 3. Insert into cancellation_requests — admin reads from here
-    const { error: reqErr } = await sb.from('cancellation_requests').insert({
-      user_id: currentUser.id,
-      user_email: p?.email || currentUser.email,
-      user_name: p?.full_name || '',
-      plan: userPlan,
-      subscription_end_date: p?.subscription_end_date || null,
-      status: 'pending'
-    });
+      // Step 2: Mark cancel_at_period_end on profile
+      const { error: profileErr } = await sb.from('profiles')
+        .update({ cancel_at_period_end: true })
+        .eq('id', currentUser.id);
 
-    if (reqErr) {
-      console.error('Cancel request insert error:', reqErr.message, reqErr.code);
-      // Still show success — the profile flag was set, request will be visible to admin via profile
-    } else {
-      console.log('Cancellation request inserted successfully');
+      if (profileErr) throw new Error('Could not update profile: ' + profileErr.message);
+
+      // Step 3: Insert into cancellation_requests
+      const { error: reqErr } = await sb.from('cancellation_requests').insert({
+        user_id: currentUser.id,
+        user_email: p.email || currentUser.email,
+        user_name: p.full_name || '',
+        plan: p.plan || userPlan,
+        subscription_end_date: p.subscription_end_date || null,
+        status: 'pending'
+      });
+
+      if (reqErr) throw new Error('Could not insert request: ' + reqErr.message);
+
+      showToast('Cancellation request sent. You keep Pro access until your end date.');
+      setTimeout(() => window.location.reload(), 2500);
+
+    } catch (err) {
+      console.error('cancelPlan error:', err.message);
+      showToast('Something went wrong: ' + err.message);
+      if (cancelBtn) { cancelBtn.disabled = false; cancelBtn.textContent = 'Cancel Plan'; }
     }
-
-    showToast('Cancellation request sent. You keep Pro access until your end date.');
-    setTimeout(() => window.location.reload(), 2500);
   }
 
   init();
