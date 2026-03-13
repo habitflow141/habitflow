@@ -427,20 +427,18 @@
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     // Load theme from DB
-    sb.from('profiles').select('theme, full_name').eq('id', currentUser.id).single().then(({ data: p }) => {
+    sb.from('profiles').select('theme, full_name, avatar').eq('id', currentUser.id).single().then(({ data: p }) => {
       if (p?.theme) {
         document.body.setAttribute('data-theme', p.theme);
         localStorage.setItem('hf-theme', p.theme);
       }
       if (p?.full_name) {
         document.getElementById('nav-name').textContent = p.full_name;
-        const av = document.getElementById('nav-avatar');
-        if (av) av.textContent = profile?.avatar || profile?.full_name?.[0]?.toUpperCase() || '🙂';
-        if (av) av.textContent = p.full_name[0].toUpperCase();
       }
+      const avEl = document.getElementById('nav-avatar');
+      if (avEl) avEl.textContent = p?.avatar || (p?.full_name ? p.full_name[0].toUpperCase() : '🙂');
     });
     document.getElementById('nav-name').textContent = name;
-    // avatar set from profile load
     document.getElementById('sc-name').textContent = name;
     document.getElementById('sc-date').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('month-label').textContent = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });

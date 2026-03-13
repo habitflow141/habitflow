@@ -515,16 +515,16 @@
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
     // Load profile first (awaited so userPlan is set before habits render)
-    const { data: p } = await sb.from('profiles').select('theme, full_name, plan, subscription_end_date, cancel_at_period_end').eq('id', currentUser.id).single();
+    const { data: p } = await sb.from('profiles').select('theme, full_name, avatar, plan, subscription_end_date, cancel_at_period_end').eq('id', currentUser.id).single();
     if (p?.theme) {
       document.body.setAttribute('data-theme', p.theme);
       localStorage.setItem('hf-theme', p.theme);
     }
     if (p?.full_name) {
       document.getElementById('nav-name').textContent = p.full_name;
-      const av = document.getElementById('nav-avatar');
-      if (av) av.textContent = p.full_name[0].toUpperCase();
     }
+    const av = document.getElementById('nav-avatar');
+    if (av) av.textContent = p?.avatar || (p?.full_name ? p.full_name[0].toUpperCase() : '🙂');
     if (p?.plan) {
       userPlan = p.plan;
       const subEndDate = p.subscription_end_date || null;
