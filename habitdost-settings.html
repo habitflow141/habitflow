@@ -708,7 +708,8 @@ function closeSidebar() {
     const { error } = await sb.from('profiles').update({ avatar: selectedAvatar }).eq('id', currentUser.id);
     if (error) { showToast('❌ Could not save avatar'); return; }
     showToast('✅ Avatar saved!');
-    document.getElementById('avatar-picker').style.display = 'none';
+    const picker = document.getElementById('avatar-picker');
+    if (picker) { picker.style.display = 'none'; picker.style.setProperty('display', 'none', 'important'); }
   }
 
   // Init picker grids on load
