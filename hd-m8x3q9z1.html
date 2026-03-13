@@ -568,7 +568,7 @@
   });
 
   // ══════════════════════════════════════════════════════
-  // CANCELLATION REQUESTS — reads from cancellation_requests table
+  // CANCELLATION REQUESTS — simple name + email display only
   // ══════════════════════════════════════════════════════
   async function loadCancellationRequests() {
     const list = document.getElementById('can-list');
@@ -577,7 +577,7 @@
 
     const { data, error } = await sb
       .from('cancellation_requests')
-      .select('*')
+      .select('user_name, user_email, plan, created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
@@ -597,40 +597,20 @@
     badge.style.display = 'inline';
 
     list.innerHTML = data.map(r => {
-      const endDate = r.subscription_end_date ? new Date(r.subscription_end_date + 'T00:00:00') : null;
-      const daysLeft = endDate ? Math.ceil((endDate - new Date()) / 86400000) : null;
-      const planClass = r.plan === 'pro_annual' ? 'annual' : 'pro';
       const planLabel = r.plan === 'pro_annual' ? '⭐ Pro Annual' : '✅ Pro Monthly';
+      const planClass = r.plan === 'pro_annual' ? 'annual' : 'pro';
       const when = new Date(r.created_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-      return `<div class="can-item" id="canrow-${r.id}">
-        <div class="can-info">
-          <div class="can-name">${r.user_name || 'Unnamed'}</div>
-          <div class="can-email">${r.user_email || '—'}</div>
+      return `<div class="del-item">
+        <div class="del-info">
+          <div class="del-name">${r.user_name || 'Unnamed'}</div>
+          <div class="del-email">${r.user_email || '—'}</div>
           <div class="can-meta">
             <span class="del-tag plan-${planClass}">${planLabel}</span>
-            ${daysLeft !== null ? `<span class="del-tag days">⏳ ${daysLeft > 0 ? daysLeft+' days left' : 'Expired'}</span>` : ''}
-            ${endDate ? `<span class="del-tag" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.3)">Ends ${endDate.toLocaleDateString('en-IN')}</span>` : ''}
             <span class="del-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">📅 ${when}</span>
           </div>
         </div>
-        <div class="del-actions">
-          <button class="btn-permdelete" onclick="approveCancellation('${r.id}','${r.user_id}',this)">✅ Approve</button>
-          <button class="btn-restore" onclick="dismissRequest('cancellation_requests','${r.id}','canrow-${r.id}','can-count','can-list',this)">✖ Dismiss</button>
-        </div>
       </div>`;
     }).join('');
-  }
-
-  async function approveCancellation(requestId, userId, btn) {
-    const name = btn.closest('.can-item').querySelector('.can-name').textContent;
-    if (!confirm('Approve cancellation for ' + name + '?\n\nThey keep Pro access until end date then auto-downgrade to Free.')) return;
-    // Mark request done
-    await sb.from('cancellation_requests').update({ status: 'approved' }).eq('id', requestId);
-    // Ensure profile flag is set
-    await sb.from('profiles').update({ cancel_at_period_end: true }).eq('id', userId);
-    addLog('✅ Approved cancellation: ' + name, 'success');
-    showToast('✅ Cancellation approved for ' + name);
-    removeRow('canrow-' + requestId, 'can-count', 'can-list', '✅ No cancellation requests');
   }
 
   // ══════════════════════════════════════════════════════
