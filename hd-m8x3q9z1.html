@@ -204,9 +204,7 @@
   <!-- DELETION REQUESTS -->
   <div class="section">
     <h3>🗑️ Deletion Requests <span class="del-count" id="del-count" style="display:none">0</span></h3>
-    <div class="del-list" id="del-list">
-      <div class="del-empty">Loading...</div>
-    </div>
+    <div id="del-list"><div class="del-empty">Loading...</div></div>
   </div>
 
   <!-- ACTION LOG -->
@@ -534,343 +532,164 @@
     if (!e.target.closest('.search-wrap')) closeAutocomplete();
   });
 
-  // ── CANCELLATION REQUESTS — reads directly from profiles (same as deletions) ──
+  // ══════════════════════════════════════════════════════
+  // CANCELLATION REQUESTS — reads from cancellation_requests table
+  // ══════════════════════════════════════════════════════
   async function loadCancellationRequests() {
     const list = document.getElementById('can-list');
     const badge = document.getElementById('can-count');
     list.innerHTML = '<div class="del-empty">Loading...</div>';
 
-    // Simply fetch all profiles where cancel_at_period_end is true
-    // No deleted_at filter — keep it simple
-    const { data, error } = await sb.from('profiles')
-      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at, created_at')
-      .eq('cancel_at_period_end', true)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('loadCancellationRequests error:', error.message);
-      list.innerHTML = '<div class="del-empty">⚠️ Error: ' + error.message + '<br><small>Make sure you ran the admin RLS policy SQL in Supabase.</small></div>';
-      badge.style.display = 'none';
-      return;
-    }
-
-    // Filter out users who also have deleted_at set (they're in deletion queue already)
-    const cancellers = (data || []).filter(u => !u.deleted_at);
-    console.log('Cancellation requests:', cancellers.length);
-
-    if (!cancellers.length) {
-      list.innerHTML = '<div class="del-empty">✅ No cancellation requests</div>';
-      badge.style.display = 'none';
-      return;
-    }
-
-    badge.textContent = cancellers.length;
-    badge.style.display = 'inline';
-
-    list.innerHTML = cancellers.map(u => {
-      const endDate = u.subscription_end_date ? new Date(u.subscription_end_date + 'T00:00:00') : null;
-      const daysLeft = endDate ? Math.ceil((endDate - new Date()) / (1000*60*60*24)) : null;
-      const planClass = u.plan === 'pro_annual' ? 'annual' : 'pro';
-      const planLabel = u.plan === 'pro_annual' ? '⭐ Pro Annual' : '✅ Pro Monthly';
-      return `<div class="can-item" id="canrow-${u.id}">
-        <div class="can-info">
-          <div class="can-name">${u.full_name || 'Unnamed User'}</div>
-          <div class="can-email">${u.email || '—'}</div>
-          <div class="can-meta">
-            <span class="del-tag plan-${planClass}">${planLabel}</span>
-            ${daysLeft !== null ? `<span class="del-tag days">⏳ ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'}</span>` : ''}
-            ${endDate ? `<span class="del-tag" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)">Ends: ${endDate.toLocaleDateString('en-IN')}</span>` : ''}
-          </div>
-        </div>
-        <div class="del-actions">
-          <button class="btn-permdelete" onclick="approveCancellation('${u.id}', this)">✅ Approve Cancel</button>
-          <button class="btn-restore" onclick="undoCancellation('${u.id}', this)">↩️ Undo</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  async function approveCancellation(userId, btn) {
-    const name = btn.closest('.can-item')?.querySelector('.can-name')?.textContent || 'this user';
-    if (!confirm('Approve cancellation for ' + name + '?\n\nThey keep Pro access until their end date, then auto-downgrade to Free.')) return;
-    const { error } = await sb.from('profiles')
-      .update({ cancel_at_period_end: true })
-      .eq('id', userId);
-    if (error) { showToast('❌ Failed: ' + error.message); return; }
-    addLog('✅ Approved cancellation for: ' + name, 'success');
-    showToast('✅ Cancellation approved for ' + name);
-    document.getElementById('canrow-' + userId)?.remove();
-    updateCanBadge();
-  }
-
-  async function undoCancellation(userId, btn) {
-    const name = btn.closest('.can-item')?.querySelector('.can-name')?.textContent || 'this user';
-    if (!confirm('Undo cancellation for ' + name + '?\n\nTheir subscription will continue normally and cancel_at_period_end will be reset to false.')) return;
-    const { error } = await sb.from('profiles')
-      .update({ cancel_at_period_end: false })
-      .eq('id', userId);
-    if (error) { showToast('❌ Failed: ' + error.message); return; }
-    addLog('↩️ Undid cancellation for: ' + name, 'success');
-    showToast('↩️ Cancellation undone for ' + name);
-    document.getElementById('canrow-' + userId)?.remove();
-    updateCanBadge();
-  }
-
-  function updateCanBadge() {
-    const remaining = document.querySelectorAll('[id^="canrow-"]').length;
-    const badge = document.getElementById('can-count');
-    if (remaining === 0) {
-      badge.style.display = 'none';
-      document.getElementById('can-list').innerHTML = '<div class="del-empty">✅ No cancellation requests</div>';
-    } else {
-      badge.textContent = remaining;
-    }
-  }
-
-  async function loadDeletionRequests() {
-    const list = document.getElementById('del-list');
-    const badge = document.getElementById('del-count');
-    list.innerHTML = '<div class="del-empty">Loading...</div>';
-
-    const { data, error } = await sb.from('profiles')
-      .select('id, full_name, email, plan, deleted_at, created_at')
-      .not('deleted_at', 'is', null)
-      .order('deleted_at', { ascending: false });
-
-    if (error) {
-      console.error('loadDeletionRequests error:', error.message);
-      list.innerHTML = '<div class="del-empty">⚠️ Error: ' + error.message + '</div>';
-      return;
-    }
-
-    const deleters = data || [];
-    console.log('Deletion requests found:', deleters.length);
-
-    if (!deleters.length) {
-      list.innerHTML = '<div class="del-empty">✅ No pending deletion requests</div>';
-      badge.style.display = 'none';
-      return;
-    }
-
-    badge.textContent = deleters.length;
-    badge.style.display = 'inline';
-
-    list.innerHTML = deleters.map(u => {
-      const deletedAt = new Date(u.deleted_at);
-      const now = new Date();
-      const daysLeft = 30 - Math.floor((now - deletedAt) / (1000*60*60*24));
-      const planClass = u.plan === 'pro_annual' ? 'annual' : u.plan === 'pro' ? 'pro' : 'free';
-      const planLabel = u.plan === 'pro_annual' ? '⭐ Pro Annual' : u.plan === 'pro' ? '✅ Pro' : '🆓 Free';
-      return `<div class="del-item" id="delrow-${u.id}">
-        <div class="del-info">
-          <div class="del-name">${u.full_name || 'Unnamed User'}</div>
-          <div class="del-email">${u.email || '—'}</div>
-          <div class="del-meta">
-            <span class="del-tag plan-${planClass}">${planLabel}</span>
-            <span class="del-tag days">🗓️ ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired — delete now'}</span>
-            <span class="del-tag days" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)">Requested: ${deletedAt.toLocaleDateString('en-IN')}</span>
-          </div>
-        </div>
-        <div class="del-actions">
-          <button class="btn-restore" onclick="restoreUser('${u.id}', this)">↩️ Restore</button>
-          <button class="btn-permdelete" onclick="hardDeleteUser('${u.id}', this)">🗑️ Delete Data</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  async function restoreUser(userId, btn) {
-    const name = btn.closest('.del-item')?.querySelector('.del-name')?.textContent || 'this user';
-    if (!confirm('Restore ' + name + '? This will clear their deletion request and give them full access back.')) return;
-    const { error } = await sb.from('profiles').update({ deleted_at: null }).eq('id', userId);
-    if (error) { showToast('❌ Restore failed: ' + error.message); return; }
-    addLog('↩️ Restored account: ' + name);
-    showToast('✅ Account restored for ' + name);
-    document.getElementById('delrow-' + userId)?.remove();
-    // update badge count
-    const remaining = document.querySelectorAll('[id^="delrow-"]').length;
-    const badge = document.getElementById('del-count');
-    if (remaining === 0) {
-      badge.style.display = 'none';
-      document.getElementById('del-list').innerHTML = '<div class="del-empty">✅ No pending deletion requests</div>';
-    } else {
-      badge.textContent = remaining;
-    }
-  }
-
-  async function hardDeleteUser(userId, btn) {
-    const name = btn.closest('.del-item')?.querySelector('.del-name')?.textContent || 'this user';
-    if (!confirm('⚠️ Permanently delete ALL data for ' + name + '?\n\nThis deletes:\n• Profile\n• All habits & logs\n• Payments\n• Reviews\n• Rest days\n\nThis cannot be undone. The auth account will still exist in Supabase — delete it manually there if needed.')) return;
-
-    // Delete in order (child tables first)
-    await sb.from('rest_days').delete().eq('user_id', userId);
-    await sb.from('reviews').delete().eq('user_id', userId);
-    await sb.from('payments').delete().eq('user_id', userId);
-    await sb.from('habit_logs').delete().eq('user_id', userId);
-    await sb.from('habits').delete().eq('user_id', userId);
-    const { error } = await sb.from('profiles').delete().eq('id', userId);
-
-    if (error) { showToast('❌ Delete failed: ' + error.message); return; }
-    addLog('🗑️ Hard deleted all data for: ' + name);
-    showToast('✅ All data deleted for ' + name);
-    document.getElementById('delrow-' + userId)?.remove();
-    const remaining = document.querySelectorAll('[id^="delrow-"]').length;
-    const badge = document.getElementById('del-count');
-    if (remaining === 0) {
-      badge.style.display = 'none';
-      document.getElementById('del-list').innerHTML = '<div class="del-empty">✅ No pending deletion requests</div>';
-    } else {
-      badge.textContent = remaining;
-    }
-  }
-
-
-  // ── ALL USERS CACHE (for autocomplete + panels) ───────────────────────────
-  
-
-  async function loadAllUsers() {
-    const { data, error } = await sb.from('profiles')
-      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at, created_at')
-      .order('created_at', { ascending: false });
-    if (error) {
-      console.error('loadAllUsers error:', error.message);
-      showToast('⚠️ Could not load users: ' + error.message);
-    }
-    allUsers = data || [];
-    console.log('Loaded users:', allUsers.length);
-  }
-
-  // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────
-  function onSearchInput() {
-    const q = document.getElementById('search-email').value.trim().toLowerCase();
-    const list = document.getElementById('ac-list');
-    if (!q || q.length < 1) { list.classList.remove('show'); return; }
-
-    const matches = allUsers.filter(u =>
-      (u.email || '').toLowerCase().includes(q) ||
-      (u.full_name || '').toLowerCase().includes(q)
-    ).slice(0, 6);
-
-    if (!matches.length) { list.classList.remove('show'); return; }
-
-    list.innerHTML = matches.map(u => `
-      <div class="ac-item" onclick="selectAutocomplete('${u.email}')">
-        <span class="ac-name">${u.full_name || '(no name)'}</span>
-        <span class="ac-email">${u.email}</span>
-      </div>`).join('');
-    list.classList.add('show');
-  }
-
-  function selectAutocomplete(email) {
-    document.getElementById('search-email').value = email;
-    closeAutocomplete();
-    searchUser();
-  }
-
-  function closeAutocomplete() {
-    document.getElementById('ac-list').classList.remove('show');
-  }
-
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.search-wrap')) closeAutocomplete();
-  });
-
-  // ── CANCELLATION REQUESTS ─────────────────────────────────────────────────
-  async function loadCancellationRequests() {
-    const list = document.getElementById('can-list');
-    const badge = document.getElementById('can-count');
-    list.innerHTML = '<div class="del-empty">Loading...</div>';
-
-    const { data, error } = await sb.from('cancellation_requests')
+    const { data, error } = await sb
+      .from('cancellation_requests')
       .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Cancellation error:', error.message);
       list.innerHTML = '<div class="del-empty">⚠️ ' + error.message + '</div>';
       badge.style.display = 'none';
       return;
     }
 
-    const requests = data || [];
-    if (!requests.length) {
+    if (!data || !data.length) {
       list.innerHTML = '<div class="del-empty">✅ No cancellation requests</div>';
       badge.style.display = 'none';
       return;
     }
 
-    badge.textContent = requests.length;
+    badge.textContent = data.length;
     badge.style.display = 'inline';
 
-    list.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">' + requests.map(r => {
+    list.innerHTML = data.map(r => {
       const endDate = r.subscription_end_date ? new Date(r.subscription_end_date + 'T00:00:00') : null;
-      const daysLeft = endDate ? Math.ceil((endDate - new Date()) / (1000*60*60*24)) : null;
+      const daysLeft = endDate ? Math.ceil((endDate - new Date()) / 86400000) : null;
+      const planClass = r.plan === 'pro_annual' ? 'annual' : 'pro';
       const planLabel = r.plan === 'pro_annual' ? '⭐ Pro Annual' : '✅ Pro Monthly';
-      const planClass = r.plan === 'pro_annual' ? 'plan-annual' : 'plan-pro';
-      const reqDate = new Date(r.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      const when = new Date(r.created_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
       return `<div class="can-item" id="canrow-${r.id}">
         <div class="can-info">
-          <div class="can-name">${r.user_name || '(no name)'}</div>
+          <div class="can-name">${r.user_name || 'Unnamed'}</div>
           <div class="can-email">${r.user_email || '—'}</div>
           <div class="can-meta">
-            <span class="del-tag ${planClass}">${planLabel}</span>
-            ${daysLeft !== null ? `<span class="del-tag days">⏳ ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'}</span>` : ''}
-            ${endDate ? `<span class="del-tag" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)">Ends: ${endDate.toLocaleDateString('en-IN')}</span>` : ''}
-            <span class="del-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">Requested: ${reqDate}</span>
+            <span class="del-tag plan-${planClass}">${planLabel}</span>
+            ${daysLeft !== null ? `<span class="del-tag days">⏳ ${daysLeft > 0 ? daysLeft+' days left' : 'Expired'}</span>` : ''}
+            ${endDate ? `<span class="del-tag" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.3)">Ends ${endDate.toLocaleDateString('en-IN')}</span>` : ''}
+            <span class="del-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">📅 ${when}</span>
           </div>
         </div>
         <div class="del-actions">
-          <button class="btn-permdelete" style="background:rgba(239,68,68,.15);color:#f87171" onclick="approveCancellation('${r.id}','${r.user_id}', this)">✅ Approve & Cancel</button>
-          <button class="btn-restore" onclick="dismissCancellation('${r.id}', this)">✖ Dismiss</button>
+          <button class="btn-permdelete" onclick="approveCancellation('${r.id}','${r.user_id}',this)">✅ Approve</button>
+          <button class="btn-restore" onclick="dismissRequest('cancellation_requests','${r.id}','canrow-${r.id}','can-count','can-list',this)">✖ Dismiss</button>
         </div>
       </div>`;
-    }).join('') + '</div>';
+    }).join('');
   }
 
   async function approveCancellation(requestId, userId, btn) {
-    const name = btn.closest('.can-item')?.querySelector('.can-name')?.textContent || 'this user';
-    if (!confirm('Approve cancellation for ' + name + '?\n\nThis will:\n• Mark their request as approved\n• Set cancel_at_period_end = true (they already have this)\n\nThey keep Pro access until their end date, then auto-downgrade to Free.')) return;
-
-    // Mark request as approved
-    const { error: reqErr } = await sb.from('cancellation_requests')
-      .update({ status: 'approved', actioned_at: new Date().toISOString() })
-      .eq('id', requestId);
-    if (reqErr) { showToast('❌ Failed: ' + reqErr.message); return; }
-
-    // Ensure profile is flagged too (in case it wasn't)
+    const name = btn.closest('.can-item').querySelector('.can-name').textContent;
+    if (!confirm('Approve cancellation for ' + name + '?\n\nThey keep Pro access until end date then auto-downgrade to Free.')) return;
+    // Mark request done
+    await sb.from('cancellation_requests').update({ status: 'approved' }).eq('id', requestId);
+    // Ensure profile flag is set
     await sb.from('profiles').update({ cancel_at_period_end: true }).eq('id', userId);
-
-    addLog('✅ Approved cancellation for: ' + name);
+    addLog('✅ Approved cancellation: ' + name, 'success');
     showToast('✅ Cancellation approved for ' + name);
-    document.getElementById('canrow-' + requestId)?.remove();
-    updateCanBadge();
+    removeRow('canrow-' + requestId, 'can-count', 'can-list', '✅ No cancellation requests');
   }
 
-  async function dismissCancellation(requestId, btn) {
-    const name = btn.closest('.can-item')?.querySelector('.can-name')?.textContent || 'this user';
-    if (!confirm('Dismiss this request from ' + name + '?\n\nThis removes the request from your queue. Their plan is NOT changed.')) return;
+  // ══════════════════════════════════════════════════════
+  // DELETION REQUESTS — reads from deletion_requests table
+  // ══════════════════════════════════════════════════════
+  async function loadDeletionRequests() {
+    const list = document.getElementById('del-list');
+    const badge = document.getElementById('del-count');
+    list.innerHTML = '<div class="del-empty">Loading...</div>';
 
-    const { error } = await sb.from('cancellation_requests')
-      .update({ status: 'dismissed', actioned_at: new Date().toISOString() })
-      .eq('id', requestId);
-    if (error) { showToast('❌ Failed: ' + error.message); return; }
+    const { data, error } = await sb
+      .from('deletion_requests')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
 
-    addLog('✖ Dismissed cancellation request from: ' + name);
-    showToast('✖ Request dismissed');
-    document.getElementById('canrow-' + requestId)?.remove();
-    updateCanBadge();
+    if (error) {
+      list.innerHTML = '<div class="del-empty">⚠️ ' + error.message + '</div>';
+      badge.style.display = 'none';
+      return;
+    }
+
+    if (!data || !data.length) {
+      list.innerHTML = '<div class="del-empty">✅ No deletion requests</div>';
+      badge.style.display = 'none';
+      return;
+    }
+
+    badge.textContent = data.length;
+    badge.style.display = 'inline';
+
+    list.innerHTML = data.map(r => {
+      const when = new Date(r.created_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      const planClass = r.plan === 'pro_annual' ? 'annual' : r.plan === 'pro' ? 'pro' : 'free';
+      const planLabel = r.plan === 'pro_annual' ? '⭐ Pro Annual' : r.plan === 'pro' ? '✅ Pro' : '🆓 Free';
+      return `<div class="del-item" id="delrow-${r.id}">
+        <div class="del-info">
+          <div class="del-name">${r.user_name || 'Unnamed'}</div>
+          <div class="del-email">${r.user_email || '—'}</div>
+          <div class="can-meta">
+            <span class="del-tag plan-${planClass}">${planLabel}</span>
+            <span class="del-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">📅 ${when}</span>
+          </div>
+        </div>
+        <div class="del-actions">
+          <button class="btn-restore" onclick="restoreUser('${r.id}','${r.user_id}',this)">↩️ Restore</button>
+          <button class="btn-permdelete" onclick="hardDeleteUser('${r.id}','${r.user_id}',this)">🗑️ Delete Data</button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  function updateCanBadge() {
-    const remaining = document.querySelectorAll('[id^="canrow-"]').length;
-    const badge = document.getElementById('can-count');
+  async function restoreUser(requestId, userId, btn) {
+    const name = btn.closest('.del-item').querySelector('.del-name').textContent;
+    if (!confirm('Restore account for ' + name + '?\n\nThis clears their deletion request and restores full access.')) return;
+    await sb.from('deletion_requests').update({ status: 'dismissed' }).eq('id', requestId);
+    await sb.from('profiles').update({ deleted_at: null }).eq('id', userId);
+    addLog('↩️ Restored account: ' + name, 'success');
+    showToast('✅ Account restored for ' + name);
+    removeRow('delrow-' + requestId, 'del-count', 'del-list', '✅ No deletion requests');
+  }
+
+  async function hardDeleteUser(requestId, userId, btn) {
+    const name = btn.closest('.del-item').querySelector('.del-name').textContent;
+    if (!confirm('⚠️ Delete ALL data for ' + name + '?\n\n• Profile\n• All habits & logs\n• Payments\n• Reviews\n• Rest days\n\nCannot be undone.')) return;
+    await sb.from('rest_days').delete().eq('user_id', userId);
+    await sb.from('reviews').delete().eq('user_id', userId);
+    await sb.from('payments').delete().eq('user_id', userId);
+    await sb.from('habit_logs').delete().eq('user_id', userId);
+    await sb.from('habits').delete().eq('user_id', userId);
+    await sb.from('profiles').delete().eq('id', userId);
+    await sb.from('deletion_requests').update({ status: 'completed' }).eq('id', requestId);
+    addLog('🗑️ Hard deleted: ' + name, 'success');
+    showToast('✅ All data deleted for ' + name);
+    removeRow('delrow-' + requestId, 'del-count', 'del-list', '✅ No deletion requests');
+  }
+
+  // ── Shared helper — remove row and update badge ───────────────────────────
+  function removeRow(rowId, badgeId, listId, emptyMsg) {
+    document.getElementById(rowId)?.remove();
+    const remaining = document.querySelectorAll('[id^="' + rowId.split('-')[0] + 'row-"]').length;
+    const badge = document.getElementById(badgeId);
     if (remaining === 0) {
       badge.style.display = 'none';
-      document.getElementById('can-list').innerHTML = '<div class="del-empty">✅ No cancellation requests</div>';
+      document.getElementById(listId).innerHTML = '<div class="del-empty">' + emptyMsg + '</div>';
     } else {
       badge.textContent = remaining;
     }
+  }
+
+  async function dismissRequest(table, requestId, rowId, badgeId, listId, btn) {
+    await sb.from(table).update({ status: 'dismissed' }).eq('id', requestId);
+    showToast('✖ Request dismissed');
+    removeRow(rowId, badgeId, listId, '✅ No cancellation requests');
   }
 
   function showToast(msg) {
