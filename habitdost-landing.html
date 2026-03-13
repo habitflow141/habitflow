@@ -788,7 +788,7 @@
     <p>© 2026 HabitDost · Made with 💚 in India</p>
   </footer>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Scroll reveal — trigger immediately if already in viewport
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
@@ -811,10 +811,4 @@
       cell.classList.add('heat-cell');
       const rand = Math.random();
       let cumul = 0, lvl = 0;
-      for (let l = 0; l < weights.length; l++) {
-        cumul += weights[l];
-        if (rand < cumul) { lvl = levels[l]; break; }
-      }
-      // last 3 cells always filled (recent activity)
-      if (i >= 25) lvl = Math.floor(Math.random() * 2) + 3;
-      cell.classList.a
+      for (let l = 0; l < w
