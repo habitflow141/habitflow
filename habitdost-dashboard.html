@@ -293,6 +293,46 @@
       .week-chart { overflow-x: hidden; }
     }
   
+
+    /* ── Milestone Celebration ── */
+    .cel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .4s; }
+    .cel-overlay.show { opacity: 1; pointer-events: all; }
+    .cel-card { background: linear-gradient(135deg, var(--sidebar), #1a3d2e); border: 2px solid var(--teal); border-radius: 28px; padding: 36px 28px; text-align: center; max-width: 320px; width: 90%; transform: scale(.8); transition: transform .4s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 0 60px rgba(13,148,136,.3); }
+    .cel-overlay.show .cel-card { transform: scale(1); }
+    .cel-emoji { font-size: 3.5rem; margin-bottom: 6px; display: block; animation: cel-bounce 1s infinite; }
+    @keyframes cel-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .cel-badge { display: inline-block; font-size: .72rem; font-weight: 800; padding: 4px 14px; border-radius: 20px; letter-spacing: .06em; text-transform: uppercase; color: #fff; margin-bottom: 14px; }
+    .cel-days { font-size: 4.5rem; font-weight: 900; line-height: 1; text-shadow: 0 0 30px currentColor; }
+    .cel-days-lbl { color: rgba(255,255,255,.45); font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin: 4px 0 14px; }
+    .cel-title { color: #fff; font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+    .cel-sub { color: rgba(255,255,255,.55); font-size: .84rem; line-height: 1.55; margin-bottom: 24px; }
+    .cel-share-btn { width: 100%; padding: 12px; background: var(--teal); color: #fff; border: none; border-radius: 12px; font-size: .88rem; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
+    .cel-close-btn { width: 100%; padding: 10px; background: none; border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.5); border-radius: 12px; font-size: .84rem; cursor: pointer; font-family: inherit; }
+    .cel-close-btn:hover { border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.8); }
+    /* ── Confetti ── */
+    .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 9998; overflow: hidden; }
+    .confetto { position: absolute; border-radius: 2px; opacity: 0; animation: confetto-fall linear forwards; }
+    @keyframes confetto-fall { 0%{opacity:1;transform:translateY(-20px) rotate(0deg)} 100%{opacity:0;transform:translateY(110vh) rotate(720deg)} }
+    /* ── Onboarding ── */
+    .ob-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: flex; align-items: center; justify-content: center; z-index: 8888; }
+    .ob-card { background: var(--sidebar); border: 1.5px solid rgba(255,255,255,.1); border-radius: 28px; padding: 32px 26px; max-width: 380px; width: 94%; text-align: center; }
+    .ob-step { color: var(--teal); font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+    .ob-title { color: #fff; font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+    .ob-sub { color: rgba(255,255,255,.5); font-size: .84rem; line-height: 1.5; margin-bottom: 22px; }
+    .ob-next-btn { width: 100%; padding: 13px; background: var(--teal); color: #fff; border: none; border-radius: 14px; font-size: .92rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .ob-skip { display: block; margin-top: 10px; color: rgba(255,255,255,.3); font-size: .78rem; cursor: pointer; background: none; border: none; font-family: inherit; width: 100%; }
+    .ob-skip:hover { color: rgba(255,255,255,.5); }
+    /* Habit suggestions */
+    .sug-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 18px; max-height: 260px; overflow-y: auto; }
+    .sug-item { background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.08); border-radius: 12px; padding: 10px 8px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; text-align: left; }
+    .sug-item:hover, .sug-item.picked { border-color: var(--teal); background: rgba(13,148,136,.15); }
+    .sug-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .sug-name { color: #fff; font-size: .8rem; font-weight: 600; }
+    /* Habit suggestions in add modal */
+    .modal-sug-title { font-size: .72rem; font-weight: 700; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .07em; margin: 14px 0 8px; }
+    .modal-sug-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+    .modal-sug-chip { background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: .78rem; color: rgba(255,255,255,.7); cursor: pointer; transition: all .2s; font-family: inherit; }
+    .modal-sug-chip:hover { border-color: var(--teal); color: var(--teal); background: rgba(13,148,136,.1); }
   </style>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 </head>
@@ -473,6 +513,8 @@
     <h2>Add a New Habit ✨</h2>
     <p>Pick an icon and give your habit a name</p>
     <div class="emoji-picker" id="emoji-picker"></div>
+    <div class="modal-sug-title">✨ Quick suggestions</div>
+    <div class="modal-sug-grid" id="modal-sug-grid"></div>
     <div class="field"><label>Habit Name</label><input type="text" id="habit-name-input" placeholder="e.g. Morning Meditation" maxlength="40" /></div>
     <div class="field"><label>Reminder Time (optional)</label><input type="time" id="habit-reminder" /></div>
     <div class="modal-btns">
@@ -480,6 +522,29 @@
       <button class="btn-primary" onclick="addHabit()">Add Habit 🌱</button>
     </div>
   </div>
+</div>
+
+
+<!-- Confetti -->
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
+<!-- Milestone Celebration Overlay -->
+<div class="cel-overlay" id="cel-overlay">
+  <div class="cel-card">
+    <span class="cel-emoji" id="cel-emoji">🔥</span>
+    <div class="cel-badge" id="cel-badge">Milestone Unlocked!</div>
+    <div class="cel-days" id="cel-days" style="color:#0d9488">7</div>
+    <div class="cel-days-lbl">Day Streak</div>
+    <div class="cel-title" id="cel-title">One Week Strong!</div>
+    <div class="cel-sub" id="cel-sub">You crushed the first week!</div>
+    <button class="cel-share-btn" id="cel-share-btn" onclick="shareMilestone()">🎉 Share My Achievement</button>
+    <button class="cel-close-btn" onclick="closeCelebration()">Continue my journey →</button>
+  </div>
+</div>
+
+<!-- Onboarding Overlay -->
+<div class="ob-overlay" id="ob-overlay" style="display:none">
+  <div class="ob-card" id="ob-card"><!-- filled by JS --></div>
 </div>
 
 <div class="badge-popup" id="badge-popup">
@@ -524,6 +589,7 @@
       document.getElementById('nav-name').textContent = p.full_name;
     }
     const av = document.getElementById('nav-avatar');
+    userAvatar = p?.avatar || null;
     if (av) av.textContent = p?.avatar || (p?.full_name ? p.full_name[0].toUpperCase() : '🙂');
     if (p?.plan) {
       userPlan = p.plan;
@@ -834,7 +900,7 @@
     document.getElementById('emoji-picker').innerHTML=emojis.map(e=>`<div class="emoji-opt ${e===selectedEmoji?'selected':''}" onclick="selectEmoji('${e}',this)">${e}</div>`).join('');
   }
   window.selectEmoji=(emoji,el)=>{ selectedEmoji=emoji; document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); };
-  window.openModal=()=>{ document.getElementById('modal-overlay').classList.add('open'); setTimeout(()=>document.getElementById('habit-name-input').focus(),100); };
+  window.openModal=()=>{ document.getElementById('modal-overlay').classList.add('open'); renderModalSuggestions(); setTimeout(()=>document.getElementById('habit-name-input').focus(),100); };
   window.closeModal=()=>{ document.getElementById('modal-overlay').classList.remove('open'); document.getElementById('habit-name-input').value=''; };
   window.closeModalOutside=e=>{ if(e.target===document.getElementById('modal-overlay')) window.closeModal(); };
 
@@ -1058,6 +1124,206 @@
   };
 
   init();
+
+  // ── MILESTONE DATA ────────────────────────────────────────────────────────
+  const MILESTONES = {
+    7:   { emoji:'🔥', color:'#f59e0b', badge:'1 Week Streak!',    title:'One Week Strong!',       sub:'The first week is the hardest — and you crushed it. Keep the fire going!' },
+    21:  { emoji:'⚡', color:'#8b5cf6', badge:'21 Days Unlocked!', title:'Habit Forming Mode!',    sub:"Science says 21 days is when habits start to stick. You're officially wired for this." },
+    30:  { emoji:'🏆', color:'#0d9488', badge:'30 Day Champion!',  title:'One Full Month!',        sub:"A whole month of showing up. That's not luck — that's discipline. Incredible work." },
+    60:  { emoji:'💎', color:'#06b6d4', badge:'60 Day Legend!',    title:'Two Months Consistent!', sub:"You're in the top 5% of habit trackers. Most people quit by week 2. Not you." },
+    100: { emoji:'👑', color:'#f59e0b', badge:'100 Day King!',     title:'The Century Club!',      sub:"100 days. That's not a habit anymore — that's your identity. You are HabitDost." },
+  };
+  let currentMilestoneStreak = 0;
+  let currentMilestoneHabit = '';
+
+  // ── CONFETTI ──────────────────────────────────────────────────────────────
+  function spawnConfetti() {
+    const wrap = document.getElementById('confetti-wrap');
+    wrap.innerHTML = '';
+    const colors = ['#0d9488','#f59e0b','#8b5cf6','#06b6d4','#34d399','#f472b6','#fff'];
+    for (let i = 0; i < 90; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetto';
+      c.style.cssText = `left:${Math.random()*100}vw;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*1.2}s`;
+      wrap.appendChild(c);
+    }
+    setTimeout(() => wrap.innerHTML = '', 4000);
+  }
+
+  // ── CELEBRATION ───────────────────────────────────────────────────────────
+  function showCelebration(streak, habitName) {
+    const m = MILESTONES[streak];
+    if (!m) return;
+    currentMilestoneStreak = streak;
+    currentMilestoneHabit = habitName;
+    document.getElementById('cel-emoji').textContent = m.emoji;
+    document.getElementById('cel-badge').textContent = m.badge;
+    document.getElementById('cel-badge').style.background = m.color;
+    document.getElementById('cel-days').textContent = streak;
+    document.getElementById('cel-days').style.color = m.color;
+    document.getElementById('cel-title').textContent = m.title;
+    document.getElementById('cel-sub').textContent = m.sub;
+    document.getElementById('cel-overlay').classList.add('show');
+    spawnConfetti();
+  }
+  function closeCelebration() {
+    document.getElementById('cel-overlay').classList.remove('show');
+  }
+  function shareMilestone() {
+    const m = MILESTONES[currentMilestoneStreak];
+    const text = `I just hit a ${m.emoji} ${currentMilestoneStreak}-day streak on HabitDost! "${currentMilestoneHabit}" is now a real habit. ${m.title}\n\nBuild your habits free 👉 https://habitflow-sandy.vercel.app`;
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  }
+
+  // ── UPGRADE checkMilestone to use new celebration ─────────────────────────
+  function checkMilestone(streak, name) {
+    const icons = {3:'🌱',7:'🔥',14:'⚡',21:'🎯',30:'💎',60:'👑',100:'🏆'};
+    const labels = {3:'3 Day Streak!',7:'Week Warrior!',14:'2 Week Champion!',21:'21-Day Habit Lock!',30:'30-Day Legend!',60:'2 Month Master!',100:'Century Club!'};
+    if (!icons[streak]) return;
+    if ([7,21,30,60,100].includes(streak)) {
+      // Full celebration screen for big milestones
+      setTimeout(() => showCelebration(streak, name), 600);
+    } else {
+      // Small badge for minor milestones (3, 14)
+      confetti({ particleCount:80, spread:90, origin:{x:.5,y:.5}, colors:['#3ecf8e','#fbbf24','#f472b6','#60a5fa'] });
+      showBadge(icons[streak], labels[streak], `${name} — ${streak} days! 🎉`);
+    }
+    if (streak === 7) setTimeout(() => showReviewPopup(), 5000);
+  }
+
+  // ── PROFESSION-BASED HABIT SUGGESTIONS ───────────────────────────────────
+  const PROF_HABITS = {
+    '👨‍🎓': [{i:'📚',n:'Study'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep on time'},{i:'🏃',n:'Exercise'},{i:'📝',n:'Take notes'},{i:'💧',n:'Drink water'}],
+    '👩‍🎓': [{i:'📚',n:'Study'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep on time'},{i:'🏃',n:'Exercise'},{i:'📝',n:'Take notes'},{i:'💧',n:'Drink water'}],
+    '🧑‍🎓': [{i:'📚',n:'Study'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep on time'},{i:'🏃',n:'Exercise'},{i:'📝',n:'Take notes'},{i:'💧',n:'Drink water'}],
+    '👨‍💼': [{i:'📧',n:'Clear inbox'},{i:'🏃',n:'Morning run'},{i:'📖',n:'Read 30 mins'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'💧',n:'Drink water'}],
+    '👩‍💼': [{i:'📧',n:'Clear inbox'},{i:'🏃',n:'Morning run'},{i:'📖',n:'Read 30 mins'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'💧',n:'Drink water'}],
+    '🧑‍💼': [{i:'📧',n:'Clear inbox'},{i:'🏃',n:'Morning run'},{i:'📖',n:'Read 30 mins'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'💧',n:'Drink water'}],
+    '🤵':   [{i:'📊',n:'Review goals'},{i:'📖',n:'Read news'},{i:'🏃',n:'Exercise'},{i:'🧘',n:'Meditate'},{i:'📞',n:'Network call'},{i:'💤',n:'Sleep 7hrs'}],
+    '👨‍⚕️': [{i:'🚶',n:'Walk 10k steps'},{i:'💧',n:'Stay hydrated'},{i:'📖',n:'Read research'},{i:'🧘',n:'Decompress'},{i:'💤',n:'Sleep 8hrs'},{i:'🍎',n:'Eat healthy'}],
+    '👩‍⚕️': [{i:'🚶',n:'Walk 10k steps'},{i:'💧',n:'Stay hydrated'},{i:'📖',n:'Read research'},{i:'🧘',n:'Decompress'},{i:'💤',n:'Sleep 8hrs'},{i:'🍎',n:'Eat healthy'}],
+    '🧑‍⚕️': [{i:'🚶',n:'Walk 10k steps'},{i:'💧',n:'Stay hydrated'},{i:'📖',n:'Read research'},{i:'🧘',n:'Decompress'},{i:'💤',n:'Sleep 8hrs'},{i:'🍎',n:'Eat healthy'}],
+    '👨‍💻': [{i:'💻',n:'Code daily'},{i:'📖',n:'Read docs'},{i:'🏃',n:'Exercise'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'🌐',n:'Learn something new'}],
+    '👩‍💻': [{i:'💻',n:'Code daily'},{i:'📖',n:'Read docs'},{i:'🏃',n:'Exercise'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'🌐',n:'Learn something new'}],
+    '🧑‍💻': [{i:'💻',n:'Code daily'},{i:'📖',n:'Read docs'},{i:'🏃',n:'Exercise'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'🌐',n:'Learn something new'}],
+    '👨‍🏫': [{i:'📝',n:'Lesson prep'},{i:'📖',n:'Read'},{i:'🏃',n:'Exercise'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'💧',n:'Drink water'}],
+    '👩‍🏫': [{i:'📝',n:'Lesson prep'},{i:'📖',n:'Read'},{i:'🏃',n:'Exercise'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'💧',n:'Drink water'}],
+    'default': [{i:'💧',n:'Drink water'},{i:'🏃',n:'Exercise'},{i:'📖',n:'Read'},{i:'🧘',n:'Meditate'},{i:'💤',n:'Sleep 8hrs'},{i:'🌅',n:'Morning routine'}],
+  };
+
+  function getSuggestions(avatar) {
+    return PROF_HABITS[avatar] || PROF_HABITS['default'];
+  }
+
+  function renderModalSuggestions() {
+    const grid = document.getElementById('modal-sug-grid');
+    if (!grid) return;
+    const sugs = getSuggestions(userAvatar || 'default');
+    grid.innerHTML = sugs.map(s =>
+      `<button class="modal-sug-chip" onclick="applySuggestion('${s.i}','${s.n}')">${s.i} ${s.n}</button>`
+    ).join('');
+  }
+
+  function applySuggestion(icon, name) {
+    // Set the emoji
+    selectedEmoji = icon;
+    document.querySelectorAll('.emoji-btn').forEach(b => b.classList.toggle('selected', b.textContent === icon));
+    // Set the name
+    document.getElementById('habit-name-input').value = name;
+    document.getElementById('habit-name-input').focus();
+  }
+
+  // ── ONBOARDING ────────────────────────────────────────────────────────────
+  const OB_STEPS = ['avatar', 'habit', 'reminder'];
+  let obStep = 0;
+
+  function checkOnboarding() {
+    const done = localStorage.getItem('hd-onboarded');
+    if (!done) showOnboarding();
+  }
+
+  function showOnboarding() {
+    document.getElementById('ob-overlay').style.display = 'flex';
+    renderObStep();
+  }
+
+  function renderObStep() {
+    const card = document.getElementById('ob-card');
+    if (obStep === 0) {
+      card.innerHTML = `
+        <div class="ob-step">Step 1 of 3</div>
+        <div style="font-size:3rem;margin-bottom:8px">👋</div>
+        <div class="ob-title">Welcome to HabitDost!</div>
+        <div class="ob-sub">Let's set you up in 3 quick steps. First — you already picked your avatar in Settings. Here's a quick look at what you can do!</div>
+        <div style="background:rgba(255,255,255,.06);border-radius:14px;padding:14px;margin-bottom:20px;text-align:left">
+          <div style="color:#fff;font-size:.85rem;font-weight:700;margin-bottom:8px">✨ What HabitDost does for you:</div>
+          <div style="color:rgba(255,255,255,.55);font-size:.8rem;line-height:1.8">🔥 Tracks your daily streaks<br>📊 Shows your progress visually<br>😴 Rest days without losing streaks<br>🏆 Celebrates your milestones</div>
+        </div>
+        <button class="ob-next-btn" onclick="obNext()">Let's go! →</button>
+        <button class="ob-skip" onclick="skipOnboarding()">Skip setup</button>`;
+    } else if (obStep === 1) {
+      const sugs = getSuggestions(userAvatar || 'default');
+      card.innerHTML = `
+        <div class="ob-step">Step 2 of 3</div>
+        <div style="font-size:2.5rem;margin-bottom:8px">🌱</div>
+        <div class="ob-title">Add Your First Habit</div>
+        <div class="ob-sub">Pick one to start with. You can always add more later.</div>
+        <div class="sug-grid">${sugs.map(s => `<div class="sug-item" onclick="obPickHabit('${s.i}','${s.n}',this)"><div class="sug-icon">${s.i}</div><div class="sug-name">${s.n}</div></div>`).join('')}</div>
+        <button class="ob-next-btn" id="ob-add-btn" onclick="obAddHabitAndNext()" style="opacity:.5;pointer-events:none">Add Habit & Continue →</button>
+        <button class="ob-skip" onclick="obNext()">Skip this step</button>`;
+    } else if (obStep === 2) {
+      card.innerHTML = `
+        <div class="ob-step">Step 3 of 3</div>
+        <div style="font-size:2.5rem;margin-bottom:8px">🔔</div>
+        <div class="ob-title">Set a Daily Reminder</div>
+        <div class="ob-sub">Pick a time and we'll remind you every day. You can always change this in Settings.</div>
+        <div style="margin-bottom:20px"><input type="time" id="ob-time" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:1rem;text-align:center;font-family:inherit" value="08:00" /></div>
+        <button class="ob-next-btn" onclick="obSaveReminder()">Save & Start Tracking 🚀</button>
+        <button class="ob-skip" onclick="finishOnboarding()">Skip reminders</button>`;
+    }
+  }
+
+  let obPickedHabit = null;
+  function obPickHabit(icon, name, el) {
+    document.querySelectorAll('.sug-item').forEach(x => x.classList.remove('picked'));
+    el.classList.add('picked');
+    obPickedHabit = { icon, name };
+    const btn = document.getElementById('ob-add-btn');
+    if (btn) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }
+  }
+
+  async function obAddHabitAndNext() {
+    if (!obPickedHabit || !currentUser) { obNext(); return; }
+    await sb.from('habits').insert({ user_id: currentUser.id, name: obPickedHabit.name, icon: obPickedHabit.icon, current_streak: 0, total_logs: 0 });
+    await loadData();
+    checkOnboarding();
+    renderAll();
+    obPickedHabit = null;
+    obNext();
+  }
+
+  function obNext() { obStep++; if (obStep >= OB_STEPS.length) finishOnboarding(); else renderObStep(); }
+
+  async function obSaveReminder() {
+    const t = document.getElementById('ob-time')?.value;
+    if (t && currentUser && habits.length > 0) {
+      await sb.from('habits').update({ reminder_time: t }).eq('user_id', currentUser.id).is('reminder_time', null);
+    }
+    finishOnboarding();
+  }
+
+  function finishOnboarding() {
+    localStorage.setItem('hd-onboarded', '1');
+    document.getElementById('ob-overlay').style.display = 'none';
+    showToast('🎉 All set! Start building your habits!');
+  }
+
+  function skipOnboarding() { finishOnboarding(); }
+
+  // store avatar for suggestions
+  let userAvatar = null;
+
 </script>
 
 </body>
