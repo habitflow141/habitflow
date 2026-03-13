@@ -314,21 +314,45 @@
     .confetto { position: absolute; border-radius: 2px; opacity: 0; animation: confetto-fall linear forwards; }
     @keyframes confetto-fall { 0%{opacity:1;transform:translateY(-20px) rotate(0deg)} 100%{opacity:0;transform:translateY(110vh) rotate(720deg)} }
     /* ── Onboarding ── */
-    .ob-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: flex; align-items: center; justify-content: center; z-index: 8888; }
-    .ob-card { background: var(--sidebar); border: 1.5px solid rgba(255,255,255,.1); border-radius: 28px; padding: 32px 26px; max-width: 380px; width: 94%; text-align: center; }
-    .ob-step { color: var(--teal); font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
-    .ob-title { color: #fff; font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
-    .ob-sub { color: rgba(255,255,255,.5); font-size: .84rem; line-height: 1.5; margin-bottom: 22px; }
-    .ob-next-btn { width: 100%; padding: 13px; background: var(--teal); color: #fff; border: none; border-radius: 14px; font-size: .92rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .ob-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.93); display: flex; align-items: center; justify-content: center; z-index: 8888; padding: 16px; }
+    .ob-card { background: var(--sidebar); border: 1.5px solid rgba(255,255,255,.1); border-radius: 28px; padding: 32px 26px 26px; max-width: 420px; width: 100%; text-align: center; max-height: 92vh; overflow-y: auto; }
+    .ob-prog { display: flex; gap: 5px; justify-content: center; margin-bottom: 22px; }
+    .ob-dot { width: 28px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.12); transition: background .3s; }
+    .ob-dot.active { background: var(--teal); }
+    .ob-step { color: var(--teal); font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+    .ob-title { color: #fff; font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; line-height: 1.3; }
+    .ob-sub { color: rgba(255,255,255,.5); font-size: .83rem; line-height: 1.55; margin-bottom: 20px; }
+    .ob-next-btn { width: 100%; padding: 13px; background: var(--teal); color: #fff; border: none; border-radius: 14px; font-size: .92rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s; }
+    .ob-next-btn:disabled { opacity: .45; cursor: not-allowed; }
     .ob-skip { display: block; margin-top: 10px; color: rgba(255,255,255,.3); font-size: .78rem; cursor: pointer; background: none; border: none; font-family: inherit; width: 100%; }
     .ob-skip:hover { color: rgba(255,255,255,.5); }
+    /* name input */
+    .ob-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,.12); background: rgba(255,255,255,.07); color: #fff; font-size: .95rem; font-family: inherit; outline: none; margin-bottom: 16px; text-align: center; }
+    .ob-input:focus { border-color: var(--teal); }
+    /* Avatar picker */
+    .ob-av-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
+    .ob-av-tab { padding: 6px 14px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.12); background: none; color: rgba(255,255,255,.5); font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .2s; }
+    .ob-av-tab.active { border-color: var(--teal); color: var(--teal); background: rgba(13,148,136,.1); }
+    .ob-av-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .ob-av-item { background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.08); border-radius: 12px; padding: 10px 6px; cursor: pointer; font-size: 1.6rem; text-align: center; transition: all .2s; }
+    .ob-av-item:hover { border-color: rgba(255,255,255,.2); }
+    .ob-av-item.sel { border-color: var(--teal); background: rgba(13,148,136,.15); }
+    .ob-av-label { font-size: .65rem; color: rgba(255,255,255,.45); margin-top: 3px; }
     /* Habit suggestions */
-    .sug-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 18px; max-height: 260px; overflow-y: auto; }
+    .sug-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; max-height: 240px; overflow-y: auto; }
     .sug-item { background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.08); border-radius: 12px; padding: 10px 8px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; text-align: left; }
     .sug-item:hover, .sug-item.picked { border-color: var(--teal); background: rgba(13,148,136,.15); }
     .sug-icon { font-size: 1.4rem; flex-shrink: 0; }
     .sug-name { color: #fff; font-size: .8rem; font-weight: 600; }
-    /* Habit suggestions in add modal */
+    /* Custom habit input */
+    .ob-or { color: rgba(255,255,255,.25); font-size: .75rem; margin: 8px 0; }
+    /* Tour cards */
+    .ob-tour-card { background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.08); border-radius: 16px; padding: 16px; margin-bottom: 12px; text-align: left; }
+    .ob-tour-icon { font-size: 1.6rem; margin-bottom: 6px; }
+    .ob-tour-title { color: #fff; font-size: .92rem; font-weight: 800; margin-bottom: 4px; }
+    .ob-tour-desc { color: rgba(255,255,255,.45); font-size: .78rem; line-height: 1.5; }
+    .ob-tour-tag { display: inline-block; background: rgba(13,148,136,.2); color: var(--teal); font-size: .65rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+    /* modal sug chips */
     .modal-sug-title { font-size: .72rem; font-weight: 700; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .07em; margin: 14px 0 8px; }
     .modal-sug-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
     .modal-sug-chip { background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: .78rem; color: rgba(255,255,255,.7); cursor: pointer; transition: all .2s; font-family: inherit; }
@@ -1260,94 +1284,256 @@
   }
 
   // ── ONBOARDING ────────────────────────────────────────────────────────────
-  const OB_STEPS = ['avatar', 'habit', 'reminder'];
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ONBOARDING — 6 steps
+  // ══════════════════════════════════════════════════════════════════════════
+  const TOTAL_OB_STEPS = 6;
   let obStep = 0;
+  let obPickedHabit = null;
+  let obPickedAvatar = null;
+  let obPickedAvatarTab = 0; // 0=Male 1=Female 2=Neutral
+  let userAvatar = null;
+
+  const OB_AVATAR_DATA = [
+    { label:'👨 Male',    simple:[{e:'👦',l:'Boy'},{e:'🧑',l:'Person'},{e:'👨',l:'Man'},{e:'🧔',l:'Bearded'}],
+      prof:[{e:'👨‍🎓',l:'Student'},{e:'👨‍💼',l:'Corporate'},{e:'🤵',l:'Businessman'},{e:'👨‍⚕️',l:'Doctor'},{e:'👨‍💻',l:'Engineer'},{e:'👨‍🏫',l:'Teacher'},{e:'👨‍⚖️',l:'Lawyer'},{e:'👨‍🎨',l:'Designer'},{e:'👨‍🍳',l:'Chef'},{e:'👨‍🔬',l:'Scientist'},{e:'👨‍🚀',l:'Astronaut'},{e:'👨‍🚒',l:'Firefighter'}] },
+    { label:'👩 Female',  simple:[{e:'👧',l:'Girl'},{e:'🧒',l:'Child'},{e:'👩',l:'Woman'},{e:'👱‍♀️',l:'Blonde'}],
+      prof:[{e:'👩‍🎓',l:'Student'},{e:'👩‍💼',l:'Corporate'},{e:'👩‍💼',l:'Businesswoman'},{e:'👩‍⚕️',l:'Doctor'},{e:'👩‍💻',l:'Engineer'},{e:'👩‍🏫',l:'Teacher'},{e:'👩‍⚖️',l:'Lawyer'},{e:'👩‍🎨',l:'Designer'},{e:'👩‍🍳',l:'Chef'},{e:'👩‍🔬',l:'Scientist'},{e:'👩‍🚀',l:'Astronaut'},{e:'👩‍🚒',l:'Firefighter'}] },
+    { label:'🧑 Neutral', simple:[{e:'🙂',l:'Happy'},{e:'😎',l:'Cool'},{e:'🧑',l:'Neutral'},{e:'🤓',l:'Nerd'}],
+      prof:[{e:'🧑‍🎓',l:'Student'},{e:'🧑‍💼',l:'Corporate'},{e:'🚀',l:'Entrepreneur'},{e:'🧑‍⚕️',l:'Doctor'},{e:'🧑‍💻',l:'Engineer'},{e:'🧑‍🏫',l:'Teacher'},{e:'⚖️',l:'Lawyer'},{e:'🧑‍🎨',l:'Designer'},{e:'🧑‍🍳',l:'Chef'},{e:'🧑‍🔬',l:'Scientist'},{e:'🧑‍🚀',l:'Astronaut'},{e:'🌍',l:'Other'}] },
+  ];
 
   function checkOnboarding() {
-    const done = localStorage.getItem('hd-onboarded');
-    if (!done) showOnboarding();
+    if (!localStorage.getItem('hd-onboarded')) showOnboarding();
   }
 
   function showOnboarding() {
+    obStep = 0;
     document.getElementById('ob-overlay').style.display = 'flex';
     renderObStep();
   }
 
+  function obProgressDots() {
+    return '<div class="ob-prog">' + Array.from({length: TOTAL_OB_STEPS}, (_,i) =>
+      `<div class="ob-dot ${i === obStep ? 'active' : ''}"></div>`
+    ).join('') + '</div>';
+  }
+
   function renderObStep() {
     const card = document.getElementById('ob-card');
+    card.scrollTop = 0;
+
+    // ── STEP 0: Welcome ──────────────────────────────────────────────────────
     if (obStep === 0) {
       card.innerHTML = `
-        <div class="ob-step">Step 1 of 3</div>
-        <div style="font-size:3rem;margin-bottom:8px">👋</div>
-        <div class="ob-title">Welcome to HabitDost!</div>
-        <div class="ob-sub">Let's set you up in 3 quick steps. First — you already picked your avatar in Settings. Here's a quick look at what you can do!</div>
-        <div style="background:rgba(255,255,255,.06);border-radius:14px;padding:14px;margin-bottom:20px;text-align:left">
-          <div style="color:#fff;font-size:.85rem;font-weight:700;margin-bottom:8px">✨ What HabitDost does for you:</div>
-          <div style="color:rgba(255,255,255,.55);font-size:.8rem;line-height:1.8">🔥 Tracks your daily streaks<br>📊 Shows your progress visually<br>😴 Rest days without losing streaks<br>🏆 Celebrates your milestones</div>
+        ${obProgressDots()}
+        <div style="font-size:3.5rem;margin-bottom:10px">🎉</div>
+        <div class="ob-step">Welcome</div>
+        <div class="ob-title">You're now part of HabitDost!</div>
+        <div class="ob-sub">We're so glad you're here. HabitDost is your personal habit companion — helping you build streaks, track progress, and become the best version of yourself.<br><br>This quick setup takes less than 2 minutes ⚡</div>
+        <div style="background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.2);border-radius:14px;padding:14px;margin-bottom:20px;text-align:left">
+          <div style="color:var(--teal);font-size:.78rem;font-weight:800;margin-bottom:8px">✨ What you'll set up:</div>
+          <div style="color:rgba(255,255,255,.55);font-size:.8rem;line-height:1.9">
+            👤 Your name & avatar<br>
+            🌱 Your first habit<br>
+            🔔 A daily reminder<br>
+            🗺️ A quick tour of the app
+          </div>
         </div>
-        <button class="ob-next-btn" onclick="obNext()">Let's go! →</button>
-        <button class="ob-skip" onclick="skipOnboarding()">Skip setup</button>`;
+        <button class="ob-next-btn" onclick="obNext()">Let's get started →</button>`;
+
+    // ── STEP 1: Name + Avatar ────────────────────────────────────────────────
     } else if (obStep === 1) {
-      const sugs = getSuggestions(userAvatar || 'default');
+      const tab = OB_AVATAR_DATA[obPickedAvatarTab];
+      const allAvatars = [...tab.simple, ...tab.prof];
       card.innerHTML = `
-        <div class="ob-step">Step 2 of 3</div>
-        <div style="font-size:2.5rem;margin-bottom:8px">🌱</div>
-        <div class="ob-title">Add Your First Habit</div>
-        <div class="ob-sub">Pick one to start with. You can always add more later.</div>
-        <div class="sug-grid">${sugs.map(s => `<div class="sug-item" onclick="obPickHabit('${s.i}','${s.n}',this)"><div class="sug-icon">${s.i}</div><div class="sug-name">${s.n}</div></div>`).join('')}</div>
-        <button class="ob-next-btn" id="ob-add-btn" onclick="obAddHabitAndNext()" style="opacity:.5;pointer-events:none">Add Habit & Continue →</button>
-        <button class="ob-skip" onclick="obNext()">Skip this step</button>`;
+        ${obProgressDots()}
+        <div style="font-size:2.5rem;margin-bottom:6px">${obPickedAvatar || '👤'}</div>
+        <div class="ob-step">Step 1 of 5 — Your Profile</div>
+        <div class="ob-title">Tell us about yourself</div>
+        <div class="ob-sub">We'll personalise your experience based on who you are.</div>
+        <input class="ob-input" id="ob-name" placeholder="Your first name" maxlength="30" value="${document.getElementById('ob-name')?.value||''}" oninput="obCheckName()" />
+        <div class="ob-av-tabs">
+          ${OB_AVATAR_DATA.map((t,i) => `<button class="ob-av-tab ${i===obPickedAvatarTab?'active':''}" onclick="obSwitchTab(${i})">${t.label}</button>`).join('')}
+        </div>
+        <div class="ob-av-grid">
+          ${allAvatars.map(a => `<div class="ob-av-item ${obPickedAvatar===a.e?'sel':''}" onclick="obPickAvatar('${a.e}',this)">
+            ${a.e}<div class="ob-av-label">${a.l}</div>
+          </div>`).join('')}
+        </div>
+        <button class="ob-next-btn" id="ob-profile-btn" onclick="obSaveProfile()" ${obPickedAvatar?'':'disabled'}>Save & Continue →</button>
+        <button class="ob-skip" onclick="obNext()">Skip for now</button>`;
+
+    // ── STEP 2: Habit Suggestions ────────────────────────────────────────────
     } else if (obStep === 2) {
+      const sugs = getSuggestions(obPickedAvatar || 'default');
       card.innerHTML = `
-        <div class="ob-step">Step 3 of 3</div>
-        <div style="font-size:2.5rem;margin-bottom:8px">🔔</div>
-        <div class="ob-title">Set a Daily Reminder</div>
-        <div class="ob-sub">Pick a time and we'll remind you every day. You can always change this in Settings.</div>
-        <div style="margin-bottom:20px"><input type="time" id="ob-time" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:1rem;text-align:center;font-family:inherit" value="08:00" /></div>
-        <button class="ob-next-btn" onclick="obSaveReminder()">Save & Start Tracking 🚀</button>
-        <button class="ob-skip" onclick="finishOnboarding()">Skip reminders</button>`;
+        ${obProgressDots()}
+        <div style="font-size:2.5rem;margin-bottom:6px">🌱</div>
+        <div class="ob-step">Step 2 of 5 — First Habit</div>
+        <div class="ob-title">Pick your first habit</div>
+        <div class="ob-sub">These are suggested based on your profession. Pick one to start — you can always add more later!</div>
+        <div class="sug-grid">
+          ${sugs.map(s => `<div class="sug-item" onclick="obPickHabit('${s.i}','${s.n}',this)">
+            <div class="sug-icon">${s.i}</div><div class="sug-name">${s.n}</div>
+          </div>`).join('')}
+        </div>
+        <div class="ob-or">— or type your own —</div>
+        <input class="ob-input" id="ob-custom-habit" placeholder="e.g. 📔 Journal" maxlength="40" style="margin-top:8px" />
+        <button class="ob-next-btn" id="ob-habit-btn" onclick="obAddHabitAndNext()">Add Habit & Continue →</button>
+        <button class="ob-skip" onclick="obNext()">Skip — I'll add habits later</button>`;
+
+    // ── STEP 3: Reminder ─────────────────────────────────────────────────────
+    } else if (obStep === 3) {
+      card.innerHTML = `
+        ${obProgressDots()}
+        <div style="font-size:2.5rem;margin-bottom:6px">🔔</div>
+        <div class="ob-step">Step 3 of 5 — Daily Reminder</div>
+        <div class="ob-title">Never miss a day</div>
+        <div class="ob-sub">Set a daily reminder and we'll send you a push notification so your habit never slips your mind.</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:16px;margin-bottom:16px">
+          <input type="time" id="ob-time" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:1.1rem;text-align:center;font-family:inherit;outline:none" value="08:00" />
+        </div>
+        <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:12px;padding:10px 14px;margin-bottom:18px;text-align:left">
+          <div style="color:#fbbf24;font-size:.75rem;font-weight:700">💡 Pro tip</div>
+          <div style="color:rgba(255,255,255,.45);font-size:.76rem;margin-top:2px">Pick a time tied to an existing routine — like right after you wake up or before bed. Habit stacking works!</div>
+        </div>
+        <button class="ob-next-btn" onclick="obSaveReminder()">Set Reminder & Continue →</button>
+        <button class="ob-skip" onclick="obNext()">Skip reminders</button>`;
+
+    // ── STEP 4: App Tour ─────────────────────────────────────────────────────
+    } else if (obStep === 4) {
+      card.innerHTML = `
+        ${obProgressDots()}
+        <div style="font-size:2.5rem;margin-bottom:6px">🗺️</div>
+        <div class="ob-step">Step 4 of 5 — Quick Tour</div>
+        <div class="ob-title">Here's what's inside</div>
+        <div class="ob-sub">HabitDost has everything you need to stay consistent. Here's a quick look at each section.</div>
+        <div class="ob-tour-card">
+          <div class="ob-tour-icon">🏠</div>
+          <div class="ob-tour-title">Today — Your Home Base</div>
+          <div class="ob-tour-desc">Check in your habits every day, see today's progress bar, and track your best streak. This is where your journey happens.</div>
+          <span class="ob-tour-tag">You're here now</span>
+        </div>
+        <div class="ob-tour-card">
+          <div class="ob-tour-icon">📊</div>
+          <div class="ob-tour-title">Analytics — See Your Progress</div>
+          <div class="ob-tour-desc">A visual heatmap of your entire year, weekly bar charts, per-habit performance, and monthly overview. See exactly where you're winning.</div>
+          <span class="ob-tour-tag">Pro unlocks full analytics</span>
+        </div>
+        <div class="ob-tour-card">
+          <div class="ob-tour-icon">⚙️</div>
+          <div class="ob-tour-title">Settings — Make It Yours</div>
+          <div class="ob-tour-desc">Change your theme (5 to choose from), manage reminders, update your avatar, set rest days, and control your subscription.</div>
+        </div>
+        <button class="ob-next-btn" onclick="obNext()">Got it! What else? →</button>`;
+
+    // ── STEP 5: Upgrade + Done ───────────────────────────────────────────────
+    } else if (obStep === 5) {
+      card.innerHTML = `
+        ${obProgressDots()}
+        <div style="font-size:2.5rem;margin-bottom:6px">🚀</div>
+        <div class="ob-step">Step 5 of 5 — Go Pro</div>
+        <div class="ob-title">Unlock the full experience</div>
+        <div class="ob-sub">The free plan is great to get started. Pro takes it to the next level.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;text-align:left">
+          <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:12px">
+            <div style="color:rgba(255,255,255,.4);font-size:.7rem;font-weight:800;text-transform:uppercase;margin-bottom:8px">Free</div>
+            <div style="color:rgba(255,255,255,.55);font-size:.75rem;line-height:1.9">✓ 3 habits<br>✓ 1 reminder<br>✓ Basic stats<br>✓ 1 rest day</div>
+          </div>
+          <div style="background:rgba(13,148,136,.1);border:1.5px solid rgba(13,148,136,.3);border-radius:12px;padding:12px">
+            <div style="color:var(--teal);font-size:.7rem;font-weight:800;text-transform:uppercase;margin-bottom:8px">Pro ₹99/mo</div>
+            <div style="color:rgba(255,255,255,.7);font-size:.75rem;line-height:1.9">✓ Unlimited habits<br>✓ All 5 themes<br>✓ Full analytics<br>✓ No ads<br>✓ 3 rest days</div>
+          </div>
+        </div>
+        <button class="ob-next-btn" onclick="finishOnboarding()" style="margin-bottom:8px">Start Tracking! 🎉</button>
+        <button style="width:100%;padding:11px;background:none;border:1.5px solid rgba(13,148,136,.4);color:var(--teal);border-radius:14px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit" onclick="window.location.href='habitdost-upgrade.html'">Upgrade to Pro →</button>`;
     }
   }
 
-  let obPickedHabit = null;
+  function obSwitchTab(idx) {
+    obPickedAvatarTab = idx;
+    renderObStep();
+  }
+
+  function obPickAvatar(emoji, el) {
+    obPickedAvatar = emoji;
+    document.querySelectorAll('.ob-av-item').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    document.querySelector('.ob-card > div:first-child + div + div')?.setAttribute('style','font-size:2.5rem;margin-bottom:6px');
+    // Update the big avatar preview at top
+    const preview = document.querySelector('.ob-card > [style*="font-size:2.5rem"]');
+    if (preview) preview.textContent = emoji;
+    const btn = document.getElementById('ob-profile-btn');
+    if (btn) { btn.disabled = false; }
+  }
+
+  function obCheckName() {
+    // enable button as long as avatar is picked (name optional)
+    const btn = document.getElementById('ob-profile-btn');
+    if (btn && obPickedAvatar) btn.disabled = false;
+  }
+
+  async function obSaveProfile() {
+    const nameEl = document.getElementById('ob-name');
+    const name = nameEl?.value?.trim();
+    if (!currentUser) { obNext(); return; }
+    const updates = { avatar: obPickedAvatar };
+    if (name) updates.full_name = name;
+    await sb.from('profiles').update(updates).eq('id', currentUser.id);
+    // Update local state
+    userAvatar = obPickedAvatar;
+    const av = document.getElementById('nav-avatar');
+    if (av) av.textContent = obPickedAvatar || (name ? name[0].toUpperCase() : '🙂');
+    obNext();
+  }
+
   function obPickHabit(icon, name, el) {
     document.querySelectorAll('.sug-item').forEach(x => x.classList.remove('picked'));
     el.classList.add('picked');
     obPickedHabit = { icon, name };
-    const btn = document.getElementById('ob-add-btn');
-    if (btn) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }
+    const custom = document.getElementById('ob-custom-habit');
+    if (custom) custom.value = '';
   }
 
   async function obAddHabitAndNext() {
-    if (!obPickedHabit || !currentUser) { obNext(); return; }
-    await sb.from('habits').insert({ user_id: currentUser.id, name: obPickedHabit.name, icon: obPickedHabit.icon, current_streak: 0, total_logs: 0 });
-    await loadData();
-    checkOnboarding();
-    renderAll();
+    const customEl = document.getElementById('ob-custom-habit');
+    const customVal = customEl?.value?.trim();
+    let habit = obPickedHabit;
+    if (customVal) habit = { icon: '🌟', name: customVal };
+    if (habit && currentUser) {
+      await sb.from('habits').insert({ user_id: currentUser.id, name: habit.name, icon: habit.icon, current_streak: 0, total_logs: 0 });
+      await loadData(); renderAll();
+    }
     obPickedHabit = null;
     obNext();
   }
-
-  function obNext() { obStep++; if (obStep >= OB_STEPS.length) finishOnboarding(); else renderObStep(); }
 
   async function obSaveReminder() {
     const t = document.getElementById('ob-time')?.value;
     if (t && currentUser && habits.length > 0) {
       await sb.from('habits').update({ reminder_time: t }).eq('user_id', currentUser.id).is('reminder_time', null);
     }
-    finishOnboarding();
+    obNext();
+  }
+
+  function obNext() {
+    obStep++;
+    if (obStep >= TOTAL_OB_STEPS) finishOnboarding();
+    else renderObStep();
   }
 
   function finishOnboarding() {
     localStorage.setItem('hd-onboarded', '1');
     document.getElementById('ob-overlay').style.display = 'none';
-    showToast('🎉 All set! Start building your habits!');
+    spawnConfetti();
+    setTimeout(() => showToast("🎉 Welcome to HabitDost! Let's build something great."), 400);
   }
 
   function skipOnboarding() { finishOnboarding(); }
 
-  // store avatar for suggestions
-  let userAvatar = null;
+
 
 </script>
 
