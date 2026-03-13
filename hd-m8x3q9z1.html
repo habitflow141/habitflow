@@ -109,6 +109,25 @@
     .btn-permdelete:hover { background: rgba(239,68,68,.25); }
     .del-empty { color: var(--muted); font-size: .82rem; text-align: center; padding: 20px 0; }
     .del-count { background: #ef4444; color: #fff; font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
+    /* Autocomplete */
+    .search-wrap { position: relative; flex: 1; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-top: 4px; z-index: 100; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.3); display: none; }
+    .autocomplete-list.show { display: block; }
+    .ac-item { padding: 10px 14px; font-size: .82rem; color: rgba(255,255,255,.8); cursor: pointer; border-bottom: 1px solid rgba(255,255,255,.05); display: flex; flex-direction: column; gap: 1px; }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover { background: rgba(255,255,255,.06); }
+    .ac-name { font-weight: 700; color: #fff; font-size: .8rem; }
+    .ac-email { font-size: .72rem; color: var(--muted); }
+    /* Cancel requests */
+    .can-item { background: rgba(251,191,36,.05); border: 1px solid rgba(251,191,36,.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .can-info .can-name { color: #fff; font-size: .88rem; font-weight: 700; margin-bottom: 2px; }
+    .can-info .can-email { color: var(--muted); font-size: .76rem; margin-bottom: 4px; word-break: break-all; }
+    .can-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .can-tag { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+    .btn-keep { padding: 7px 14px; border-radius: 10px; border: 1.5px solid #0d9488; background: none; color: #0d9488; font-size: .76rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-keep:hover { background: rgba(13,148,136,.15); }
+    .can-count { background: #f59e0b; color: #000; font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -147,7 +166,10 @@
   <div class="section">
     <h3>🔍 User Lookup & Plan Control</h3>
     <div class="search-row">
-      <input type="email" id="search-email" placeholder="Enter user email address..." onkeydown="if(event.key==='Enter')searchUser()" />
+      <div class="search-wrap">
+        <input type="text" id="search-email" placeholder="Type email or name to search..." oninput="onSearchInput()" onkeydown="if(event.key==='Enter'){closeAutocomplete();searchUser();}" autocomplete="off" />
+        <div class="autocomplete-list" id="ac-list"></div>
+      </div>
       <button class="btn-search" id="search-btn" onclick="searchUser()">Search</button>
     </div>
 
@@ -171,6 +193,12 @@
         <div class="sub-item">User ID<span id="u-id" style="font-size:.65rem;word-break:break-all;max-width:180px">—</span></div>
       </div>
     </div>
+  </div>
+
+  <!-- CANCELLATION REQUESTS -->
+  <div class="section">
+    <h3>⚠️ Cancellation Requests <span class="can-count" id="can-count" style="display:none">0</span></h3>
+    <div id="can-list"><div class="del-empty">Loading...</div></div>
   </div>
 
   <!-- DELETION REQUESTS -->
@@ -237,10 +265,12 @@
     showPanel(data.user.email);
   }
 
-  function showPanel(email) {
+  async function showPanel(email) {
     document.getElementById('login-gate').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
     document.getElementById('admin-email-display').textContent = email;
+    await loadAllUsers();
+    loadCancellationRequests();
     loadDeletionRequests();
   }
 
@@ -356,25 +386,21 @@
 
 
   // ── DELETION REQUESTS ─────────────────────────────────────────────────────
-  async function loadDeletionRequests() {
-    const { data, error } = await sb.from('profiles')
-      .select('id, full_name, email, plan, deleted_at, created_at')
-      .not('deleted_at', 'is', null)
-      .order('deleted_at', { ascending: false });
-
+  function loadDeletionRequests() {
+    const deleters = allUsers.filter(u => u.deleted_at);
     const list = document.getElementById('del-list');
     const badge = document.getElementById('del-count');
 
-    if (error || !data || data.length === 0) {
+    if (!deleters.length) {
       list.innerHTML = '<div class="del-empty">✅ No pending deletion requests</div>';
       badge.style.display = 'none';
       return;
     }
 
-    badge.textContent = data.length;
+    badge.textContent = deleters.length;
     badge.style.display = 'inline';
 
-    list.innerHTML = data.map(u => {
+    list.innerHTML = deleters.map(u => {
       const deletedAt = new Date(u.deleted_at);
       const now = new Date();
       const daysLeft = 30 - Math.floor((now - deletedAt) / (1000*60*60*24));
@@ -439,6 +465,101 @@
     } else {
       badge.textContent = remaining;
     }
+  }
+
+
+  // ── ALL USERS CACHE (for autocomplete + panels) ───────────────────────────
+  let allUsers = [];
+
+  async function loadAllUsers() {
+    const { data } = await sb.from('profiles')
+      .select('id, full_name, email, plan, subscription_end_date, cancel_at_period_end, deleted_at, created_at')
+      .order('created_at', { ascending: false });
+    allUsers = data || [];
+  }
+
+  // ── AUTOCOMPLETE ──────────────────────────────────────────────────────────
+  function onSearchInput() {
+    const q = document.getElementById('search-email').value.trim().toLowerCase();
+    const list = document.getElementById('ac-list');
+    if (!q || q.length < 1) { list.classList.remove('show'); return; }
+
+    const matches = allUsers.filter(u =>
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.full_name || '').toLowerCase().includes(q)
+    ).slice(0, 6);
+
+    if (!matches.length) { list.classList.remove('show'); return; }
+
+    list.innerHTML = matches.map(u => `
+      <div class="ac-item" onclick="selectAutocomplete('${u.email}')">
+        <span class="ac-name">${u.full_name || '(no name)'}</span>
+        <span class="ac-email">${u.email}</span>
+      </div>`).join('');
+    list.classList.add('show');
+  }
+
+  function selectAutocomplete(email) {
+    document.getElementById('search-email').value = email;
+    closeAutocomplete();
+    searchUser();
+  }
+
+  function closeAutocomplete() {
+    document.getElementById('ac-list').classList.remove('show');
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) closeAutocomplete();
+  });
+
+  // ── CANCELLATION REQUESTS ─────────────────────────────────────────────────
+  function loadCancellationRequests() {
+    const cancellers = allUsers.filter(u => u.cancel_at_period_end === true && !u.deleted_at);
+    const list = document.getElementById('can-list');
+    const badge = document.getElementById('can-count');
+
+    if (!cancellers.length) {
+      list.innerHTML = '<div class="del-empty">✅ No active cancellation requests</div>';
+      badge.style.display = 'none';
+      return;
+    }
+
+    badge.textContent = cancellers.length;
+    badge.style.display = 'inline';
+
+    list.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">' + cancellers.map(u => {
+      const endDate = u.subscription_end_date ? new Date(u.subscription_end_date) : null;
+      const daysLeft = endDate ? Math.ceil((endDate - new Date()) / (1000*60*60*24)) : null;
+      const planLabel = u.plan === 'pro_annual' ? '⭐ Pro Annual' : '✅ Pro Monthly';
+      const planClass = u.plan === 'pro_annual' ? 'plan-annual' : 'plan-pro';
+      return `<div class="can-item" id="canrow-${u.id}">
+        <div class="can-info">
+          <div class="can-name">${u.full_name || '(no name)'}</div>
+          <div class="can-email">${u.email}</div>
+          <div class="can-meta">
+            <span class="del-tag ${planClass}">${planLabel}</span>
+            ${daysLeft !== null ? `<span class="del-tag days">⏳ ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'}</span>` : ''}
+            ${endDate ? `<span class="del-tag" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)">Ends: ${endDate.toLocaleDateString('en-IN')}</span>` : ''}
+          </div>
+        </div>
+        <div class="del-actions">
+          <button class="btn-keep" onclick="reactivateUser('${u.id}', '${(u.full_name||'this user').replace(/'/g,'')}')" title="Remove cancellation — keep them on Pro">↩️ Undo Cancel</button>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  async function reactivateUser(userId, name) {
+    if (!confirm('Remove cancellation for ' + name + '? Their subscription will continue normally.')) return;
+    const { error } = await sb.from('profiles').update({ cancel_at_period_end: false }).eq('id', userId);
+    if (error) { showToast('❌ Failed: ' + error.message); return; }
+    addLog('↩️ Reactivated subscription: ' + name);
+    showToast('✅ Cancellation removed for ' + name);
+    // Update local cache and re-render
+    const u = allUsers.find(x => x.id === userId);
+    if (u) u.cancel_at_period_end = false;
+    loadCancellationRequests();
   }
 
   function showToast(msg) {
