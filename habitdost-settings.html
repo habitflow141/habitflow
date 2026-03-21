@@ -444,7 +444,7 @@ function closeSidebar() {
         const plan = p.plan || 'free';
         const subEndDate = p.subscription_end_date || null;
         const cancelAtEnd = p.cancel_at_period_end || false;
-        document.getElementById('nav-plan').textContent = plan === 'pro' ? '✨ Pro Plan' : 'Free Plan';
+        document.getElementById('nav-plan').textContent = (plan === 'pro' || plan === 'pro_annual') ? '✨ Pro Plan' : 'Free Plan';
         userPlan = plan;
         if (plan === 'pro' || plan === 'pro_annual') {
           const isPro = plan === 'pro';
@@ -487,13 +487,13 @@ function closeSidebar() {
           restBadge.style.background = '#d1fae5';
           restBadge.style.color = '#065f46';
           restDesc.textContent = '5 rest days per month — streak stays safe on off days.';
-        } else if (plan === 'pro') {
+        } else if (plan === 'pro' || plan === 'pro_annual') {
           restToggle.disabled = false;
           restToggle.checked = true;
-          restBadge.textContent = 'Pro ✨';
+          restBadge.textContent = plan === 'pro_annual' ? 'Annual ✨' : 'Pro ✨';
           restBadge.style.background = '#d1fae5';
           restBadge.style.color = '#065f46';
-          restDesc.textContent = '3 rest days per month — streak stays safe on off days.';
+          restDesc.textContent = plan === 'pro_annual' ? '5 rest days per month — streak stays safe on off days.' : '3 rest days per month — streak stays safe on off days.';
         } else if (trialActive) {
           restToggle.disabled = false;
           restToggle.checked = true;
@@ -512,7 +512,7 @@ function closeSidebar() {
         }
         
         // 🎨 Theme trial — free users get 7 days of all themes
-        if (plan !== 'pro') {
+        if (plan !== 'pro' && plan !== 'pro_annual') {
           const joinDate = new Date(currentUser.created_at);
           const now = new Date();
           const daysSinceJoin = Math.floor((now - joinDate) / (1000 * 60 * 60 * 24));
@@ -573,7 +573,7 @@ function closeSidebar() {
     const _j = new Date(currentUser?.created_at || Date.now());
     const _days = Math.floor((new Date() - _j) / (1000*60*60*24));
     const _trialOver = _days >= 7;
-    if (userPlan !== 'pro' && _trialOver && theme !== 'forest' && save) {
+    if (userPlan !== 'pro' && userPlan !== 'pro_annual' && _trialOver && theme !== 'forest' && save) {
       showToast('🔒 Custom themes are a Pro feature — upgrade to unlock!');
       return;
     }
