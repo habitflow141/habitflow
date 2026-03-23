@@ -128,6 +128,17 @@
     .btn-keep { padding: 7px 14px; border-radius: 10px; border: 1.5px solid #0d9488; background: none; color: #0d9488; font-size: .76rem; font-weight: 700; cursor: pointer; font-family: inherit; }
     .btn-keep:hover { background: rgba(13,148,136,.15); }
     .can-count { background: #f59e0b; color: #000; font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .rev-item { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .rev-info { flex: 1; }
+  .rev-name { font-size: .9rem; font-weight: 700; color: #e2e8f0; margin-bottom: 2px; }
+  .rev-email { font-size: .75rem; color: rgba(255,255,255,.35); margin-bottom: 6px; }
+  .rev-stars { color: #f59e0b; font-size: .85rem; margin-bottom: 6px; }
+  .rev-text { font-size: .82rem; color: rgba(255,255,255,.6); line-height: 1.5; }
+  .rev-meta { font-size: .7rem; color: rgba(255,255,255,.25); margin-top: 6px; }
+  .btn-feature { padding: 7px 14px; border-radius: 8px; font-size: .78rem; font-weight: 700; cursor: pointer; border: none; transition: all .2s; white-space: nowrap; }
+  .btn-feature.on { background: #f59e0b; color: #000; }
+  .btn-feature.off { background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.1); }
+  .featured-note { font-size: .72rem; color: #f59e0b; margin-top: 8px; display: none; }
   </style>
 </head>
 <body>
@@ -207,6 +218,12 @@
     <div id="del-list"><div class="del-empty">Loading...</div></div>
   </div>
 
+  <!-- REVIEWS -->
+  <div class="section">
+    <h3>⭐ User Reviews <span class="can-count" id="rev-count" style="display:none">0</span></h3>
+    <div id="rev-list"><div class="del-empty">Loading...</div></div>
+  </div>
+
   <!-- ACTION LOG -->
   <div class="section">
     <h3>📋 Action Log</h3>
@@ -269,6 +286,7 @@
     document.getElementById('admin-email-display').textContent = email;
     await loadAllUsers();
     await loadCancellationRequests();
+    await loadReviews();
     await loadDeletionRequests();
   }
 
@@ -732,7 +750,140 @@
     removeRow(rowId, badgeId, listId, '✅ No cancellation requests');
   }
 
-  function showToast(msg) {
+  // ══════════════════════════════════════════════════════
+  // REVIEWS — all user reviews
+  // ══════════════════════════════════════════════════════
+  async function loadReviews() {
+    const list = document.getElementById('rev-list');
+    const badge = document.getElementById('rev-count');
+    list.innerHTML = '<div class="del-empty">Loading...</div>';
+
+    const { data, error } = await sb
+      .from('reviews')
+      .select('id, user_id, rating, review_text, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      list.innerHTML = '<div class="del-empty">⚠️ ' + error.message + '</div>';
+      return;
+    }
+
+    if (!data || !data.length) {
+      list.innerHTML = '<div class="del-empty">No reviews yet</div>';
+      badge.style.display = 'none';
+      return;
+    }
+
+    // Fetch profiles for these users
+    const ids = data.map(r => r.user_id);
+    const { data: profiles } = await sb.from('profiles').select('id, full_name, email, plan').in('id', ids);
+    const pm = {};
+    (profiles || []).forEach(p => pm[p.id] = p);
+
+    badge.textContent = data.length;
+    badge.style.display = 'inline';
+
+    const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+    list.innerHTML = data.map(r => {
+      const p = pm[r.user_id] || {};
+      const planClass = p.plan === 'pro_annual' ? 'annual' : p.plan === 'pro' ? 'pro' : 'free';
+      const planLabel = p.plan === 'pro_annual' ? '⭐ Pro Annual' : p.plan === 'pro' ? '✅ Pro' : '🆓 Free';
+      const when = new Date(r.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+      return `<div class="del-item">
+        <div class="del-info">
+          <div class="del-name">${p.full_name || 'Unknown'} <span style="color:#f59e0b;font-size:.9rem">${stars(r.rating)}</span></div>
+          <div class="del-email">${p.email || '—'}</div>
+          <div class="can-meta">
+            <span class="del-tag plan-${planClass}">${planLabel}</span>
+            <span class="del-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">📅 ${when}</span>
+          </div>
+          ${r.review_text ? `<div style="margin-top:8px;font-size:.82rem;color:rgba(255,255,255,.5);font-style:italic">"${r.review_text}"</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ══════════════════════════════════════════════════════
+  // REVIEWS — admin can feature/unfeature reviews
+  // ══════════════════════════════════════════════════════
+  async function loadReviews() {
+    const list = document.getElementById('rev-list');
+    const badge = document.getElementById('rev-count');
+    list.innerHTML = '<div class="del-empty">Loading...</div>';
+
+    const { data, error } = await sb
+      .from('reviews')
+      .select('id, user_id, rating, review_text, featured, created_at, profiles(full_name, email, plan)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      list.innerHTML = '<div class="del-empty">⚠️ ' + error.message + '</div>';
+      return;
+    }
+
+    if (!data || !data.length) {
+      list.innerHTML = '<div class="del-empty">No reviews yet</div>';
+      badge.style.display = 'none';
+      return;
+    }
+
+    badge.textContent = data.length;
+    badge.style.display = 'inline';
+
+    const featuredCount = data.filter(r => r.featured).length;
+
+    list.innerHTML = '<div class="featured-note" id="feat-note" style="display:block;margin-bottom:12px;">⭐ ' + featuredCount + '/3 reviews featured on landing page</div>' +
+    data.map(r => {
+      const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+      const name = r.profiles?.full_name || 'Anonymous';
+      const email = r.profiles?.email || '—';
+      const plan = r.profiles?.plan || 'free';
+      const planLabel = plan === 'pro_annual' ? '⭐ Pro Annual' : plan === 'pro' ? '✅ Pro' : '🆓 Free';
+      const when = new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      const isFeatured = r.featured;
+      return `<div class="rev-item" id="revrow-${r.id}">
+        <div class="rev-info">
+          <div class="rev-name">${name} <span class="del-tag plan-${plan === 'pro_annual' ? 'annual' : plan === 'pro' ? 'pro' : 'free'}" style="font-size:.65rem">${planLabel}</span></div>
+          <div class="rev-email">${email}</div>
+          <div class="rev-stars">${stars}</div>
+          <div class="rev-text">${r.review_text || '(no comment)'}</div>
+          <div class="rev-meta">📅 ${when}</div>
+        </div>
+        <button class="btn-feature ${isFeatured ? 'on' : 'off'}" onclick="toggleFeature('${r.id}', this)">
+          ${isFeatured ? '⭐ Featured' : '+ Feature'}
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  async function toggleFeature(reviewId, btn) {
+    const isCurrentlyFeatured = btn.classList.contains('on');
+
+    // Count current featured
+    const featuredBtns = document.querySelectorAll('.btn-feature.on');
+    if (!isCurrentlyFeatured && featuredBtns.length >= 3) {
+      showToast('⚠️ Max 3 reviews can be featured. Unfeature one first.');
+      return;
+    }
+
+    const newVal = !isCurrentlyFeatured;
+    const { error } = await sb.from('reviews').update({ featured: newVal }).eq('id', reviewId);
+    if (error) { showToast('❌ ' + error.message); return; }
+
+    btn.classList.toggle('on', newVal);
+    btn.classList.toggle('off', !newVal);
+    btn.textContent = newVal ? '⭐ Featured' : '+ Feature';
+
+    const count = document.querySelectorAll('.btn-feature.on').length;
+    const note = document.getElementById('feat-note');
+    if (note) note.textContent = '⭐ ' + count + '/3 reviews featured on landing page';
+
+    showToast(newVal ? '⭐ Review featured on landing page!' : 'Review removed from landing page');
+    addLog((newVal ? '⭐ Featured' : '★ Unfeatured') + ' review by: ' + btn.closest('.rev-item').querySelector('.rev-name').textContent.trim(), 'success');
+  }
+
+    function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
